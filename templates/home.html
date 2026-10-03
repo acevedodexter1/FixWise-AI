@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero wrap">
+  <div class="hero-copy">
+    <h1>What's wrong with your computer?</h1>
+    <p class="lead">FixWise AI helps you understand and troubleshoot common computer problems step by step, and explains why each step works.</p>
+
+    <form class="ask" action="{{ url_for('troubleshoot.start') }}" method="post">
+      <label for="problem" class="sr-only">Describe your computer problem</label>
+      <textarea id="problem" name="problem" rows="3" required maxlength="1000"
+        placeholder="Example: My laptop connects to Wi-Fi but websites won't open."></textarea>
+      <div class="ask-actions">
+        <button type="submit" class="btn btn-primary">Start troubleshooting</button>
+        <a class="btn btn-ghost" href="{{ url_for('home.learn') }}">Learn computer troubleshooting</a>
+      </div>
+      <p class="hint">No account needed. Log in later only if you want to save your history.</p>
+    </form>
+  </div>
+
+  <aside class="chat" aria-label="Example of a troubleshooting conversation">
+    <div class="chat-bar"><span class="dot"></span> FixWise AI · example</div>
+    <div class="msg user">My laptop suddenly has no sound.</div>
+    <div class="msg bot">Did the sound stop after you connected headphones?</div>
+    <div class="reply">
+      <span class="pill">Yes</span>
+      <span class="pill">No</span>
+    </div>
+    <div class="msg bot">
+      Disconnect the headphones, then check whether the speaker icon shows an output device.
+      <div class="why"><strong>Why:</strong> Windows can keep sending audio to a device that is no longer plugged in.</div>
+    </div>
+  </aside>
+</section>
+
+<section class="steps wrap">
+  <h2>How it works</h2>
+  <ol>
+    <li><strong>Describe it.</strong> Type the problem in your own words, or upload a screenshot of the error.</li>
+    <li><strong>Answer a few questions.</strong> The next question depends on your last answer.</li>
+    <li><strong>Try one safe step at a time.</strong> Tell us what happened, or that you already tried it.</li>
+    <li><strong>Learn what happened.</strong> Get a report, plus a plain explanation of the cause.</li>
+  </ol>
+</section>
+
+<section class="scope wrap">
+  <div>
+    <h2>What it can help with</h2>
+    <ul class="chips">
+      <li>Windows</li><li>Slow computer</li><li>Wi-Fi and internet</li><li>Sound</li>
+      <li>Display</li><li>Keyboard and mouse</li><li>Bluetooth</li><li>USB devices</li>
+      <li>Printer</li><li>Camera</li><li>Storage</li><li>Battery</li><li>Overheating</li>
+    </ul>
+  </div>
+  <div class="safety">
+    <h2>When it tells you to stop</h2>
+    <p>If a problem needs opening the device, board-level checks, or electrical testing, FixWise AI will not guide you through it. It will recommend a technician and prepare a summary you can hand over.</p>
+  </div>
+</section>
+
+{% endblock %}

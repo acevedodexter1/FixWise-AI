@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · FixWise AI{% endblock %}
+{% block content %}
+<section class="wrap placeholder">
+  <h1>{{ title }}</h1>
+  {% if problem %}<p>You described: <strong>{{ problem }}</strong></p>{% endif %}
+  <p>This page is coming in the next step.</p>
+  <a class="btn btn-primary" href="{{ url_for('home.home') }}">Back to home</a>
+</section>
+{% endblock %}
