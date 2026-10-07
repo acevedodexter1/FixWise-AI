@@ -1,98 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Troubleshooting · FixWise AI{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/troubleshoot.css') }}">{% endblock %}
-
 {% block content %}
 <section class="ts wrap">
-  <div class="ts-top">
-    <div>
-      <h1>Troubleshooting</h1>
-      <span class="cat">Category: {{ category_label }}</span>
-    </div>
-    <a href="{{ url_for('troubleshoot.restart') }}">Start over</a>
-  </div>
+  <div class="ts-top"><div><div class="eyebrow">Guided troubleshooting</div><h1>{{ category_label or 'Troubleshooting' }}</h1><span class="cat">FixWise will move one step at a time.</span></div><a class="back-link" href="{{ url_for('troubleshoot.restart') }}">Start over</a></div>
 
   {% if node.type in ('question', 'step') %}
-  <div class="progress" role="progressbar" aria-valuenow="{{ done + 1 }}" aria-valuemin="1" aria-valuemax="{{ total }}">
-    <div class="progress-label">Step {{ done + 1 }} of {{ total }}</div>
-    <div class="progress-track"><div class="progress-fill" style="width: {{ (done + 1) / total * 100 }}%"></div></div>
-  </div>
+  <div class="progress-wrap"><div class="progress-top"><span>Progress</span><strong>{{ done + 1 }} / {{ total }}</strong></div><div class="progress" role="progressbar" aria-valuenow="{{ done + 1 }}" aria-valuemin="1" aria-valuemax="{{ total }}"><div class="progress-fill" style="width: {{ (done + 1) / total * 100 }}%"></div></div></div>
   {% endif %}
 
-  <div class="log">
-    <div class="msg user">{{ ts.problem }}</div>
-    {% for h in ts.history %}
-      <div class="msg bot">{{ h.text }}</div>
-      <div class="msg user">{{ h.answer }}</div>
-    {% endfor %}
-  </div>
+  {% if ts.analysis and ts.analysis.summary %}
+    <div class="understood"><div class="understood-head"><span class="mini-icon">✦</span><div><strong>What FixWise understood</strong><p>{{ ts.analysis.summary }}</p></div></div>{% if ts.analysis.symptoms %}<ul>{% for s in ts.analysis.symptoms %}<li>{{ s }}</li>{% endfor %}</ul>{% endif %}{% if ts.analysis.possible_causes %}<p class="note"><strong>Possible causes:</strong> {{ ts.analysis.possible_causes|join(', ') }}</p>{% endif %}{% if ts.analysis.device_type and ts.analysis.device_type != 'unknown' %}<p class="note"><strong>Device:</strong> {{ ts.analysis.device or (ts.analysis.device_type|replace('_', ' ')|capitalize) }}{% if ts.analysis.device_confidence is not none %} ({{ (ts.analysis.device_confidence * 100)|round|int }}% sure){% endif %}</p>{% endif %}{% if ts.analysis.low_confidence %}<p class="note">I am not sure enough which area this belongs to, so I will ask instead of guessing.</p>{% endif %}{% if ts.analysis.warning %}<p class="note">{{ ts.analysis.warning }}</p>{% endif %}</div>
+  {% endif %}
+
+  <div class="conversation-card"><div class="conversation-log"><div class="msg user">{{ ts.problem }}</div>{% for h in ts.history %}<div class="msg bot">{{ h.text }}</div><div class="msg user">{{ h.answer }}</div>{% endfor %}</div></div>
 
   {% if node.type == 'question' %}
-    <div class="msg bot current">
-      {{ node.text }}
-      {% if node.why %}<div class="why"><strong>Why we ask:</strong> {{ node.why }}</div>{% endif %}
-    </div>
-    <form class="choices" method="post" action="{{ url_for('troubleshoot.answer') }}">
-      {% for o in node.options %}
-        <button type="submit" class="pill-btn" name="choice" value="{{ loop.index0 }}">{{ o.label }}</button>
-      {% endfor %}
-    </form>
+    <div class="current-prompt"><span class="prompt-label">Next question</span><h2>{{ node.text }}</h2>{% if node.why %}<div class="why"><strong>Why we ask:</strong> {{ node.why }}</div>{% endif %}</div>
+    <form class="choices" method="post" action="{{ url_for('troubleshoot.answer') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% for o in node.options %}<button type="submit" class="choice-btn" name="choice" value="{{ loop.index0 }}">{{ o.label }}<span aria-hidden="true">→</span></button>{% endfor %}</form>
 
   {% elif node.type == 'step' %}
-    <div class="card">
-      <h2>{{ node.title }}</h2>
-      <dl>
-        <dt>What to do</dt><dd>{{ node.do }}</dd>
-        <dt>Why</dt><dd>{{ node.why }}</dd>
-        <dt>What to expect</dt><dd>{{ node.expect }}</dd>
-      </dl>
-      {% if node.technical %}
-        <details><summary>Technical explanation</summary><p>{{ node.technical }}</p></details>
-      {% endif %}
-      <form class="actions" method="post" action="{{ url_for('troubleshoot.answer') }}">
-        <button type="submit" class="btn btn-primary" name="choice" value="fixed">{{ node.fixed_label or 'It worked' }}</button>
-        <button type="submit" class="btn btn-ghost" name="choice" value="not_fixed">{{ node.not_fixed_label or 'Still not working' }}</button>
-        <button type="submit" class="link-btn" name="choice" value="tried">I already tried this</button>
-      </form>
-    </div>
+    {% set risk = node.risk or 'low' %}<div class="card step-card-main"><span class="prompt-label">Try this step</span><h2>{{ node.title }}</h2><span class="risk-pill risk-{{ risk }}">{{ 'Low risk' if risk == 'low' else 'Take care' }}</span>{% if node.caution %}<div class="caution" role="note"><strong>Before you start:</strong> {{ node.caution }}</div>{% endif %}<div class="step-detail"><div><span class="detail-label">What to do</span><p>{{ node.do }}</p></div>{% if node.command %}<div><span class="detail-label">Command</span><code class="command">{{ node.command }}</code></div>{% endif %}<div><span class="detail-label">Why</span><p>{{ node.why }}</p></div><div><span class="detail-label">What to expect</span><p>{{ node.expect }}</p></div></div>{% if node.technical %}<details><summary>Show technical explanation</summary><p>{{ node.technical }}</p></details>{% endif %}<div class="actions step-actions"><form method="post" action="{{ url_for('troubleshoot.answer') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-primary" name="choice" value="fixed">{{ node.fixed_label or 'It worked' }}</button></form><form method="post" action="{{ url_for('troubleshoot.answer') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-ghost" name="choice" value="not_fixed">Still not working</button></form><form method="post" action="{{ url_for('troubleshoot.answer') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="link-btn" name="choice" value="tried">I already tried this</button></form></div></div>
 
   {% elif node.type == 'resolved' %}
-    <div class="card card-ok">
-      <h2>Great, it looks like that fixed it</h2>
-      <dl>
-        <dt>Possible cause</dt><dd>{{ node.cause }} This is a likely explanation, not a confirmed finding.</dd>
-        <dt>What you learned</dt><dd>{{ node.learn }}</dd>
-      </dl>
-      <div class="actions">
-        <a class="btn btn-primary" href="{{ url_for('troubleshoot.restart') }}">Fix something else</a>
-      </div>
-    </div>
+    <div class="card card-ok result-card"><div class="result-title"><span class="result-icon">✓</span><div><span class="eyebrow">Resolved</span><h2>Great — it looks like that fixed it.</h2></div></div><dl><dt>Possible cause</dt><dd>{{ node.cause }} <span class="note">This is a likely explanation, not a confirmed finding.</span></dd><dt>What you learned</dt><dd>{{ node.learn }}</dd></dl><div class="actions"><a class="btn btn-primary" href="{{ url_for('troubleshoot.restart') }}">Fix something else</a><a class="btn btn-ghost" href="{{ url_for('reports.current_report') }}">View report</a></div></div>
 
   {% elif node.type == 'escalate' %}
-    <div class="card card-warn">
-      <h2>Professional assistance recommended</h2>
-      <p>{{ node.reason }}</p>
-      {% if node.hardware %}
-        <p class="note">For safety, FixWise AI does not provide motherboard-level or electrical repair instructions.</p>
-      {% endif %}
-      <dl>
-        <dt>Possible causes (not confirmed)</dt>
-        <dd><ul>{% for c in node.causes %}<li>{{ c }}</li>{% endfor %}</ul></dd>
-      </dl>
-      <h3>Summary for a technician</h3>
-      <pre id="summary">FIXWISE AI TROUBLESHOOTING SUMMARY
-Problem: {{ ts.problem }}
-Category: {{ category_label }}
-Questions and steps:{% for h in ts.history %}
-- {{ h.text }} -> {{ h.answer }}{% endfor %}
-Possible causes (not confirmed):{% for c in node.causes %}
-- {{ c }}{% endfor %}
-Warning: These are possible causes only. FixWise AI cannot inspect the device.</pre>
-      <div class="actions">
-        <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('summary').innerText)">Copy summary</button>
-        <a class="btn btn-ghost" href="{{ url_for('troubleshoot.restart') }}">Start over</a>
-      </div>
-    </div>
+    <div class="card card-warn result-card"><div class="result-title"><span class="result-icon">!</span><div><span class="eyebrow">Safety first</span><h2>Professional assistance is recommended</h2></div></div><p>{{ node.reason }}</p>{% if node.hardware %}<p class="note">For safety, FixWise AI does not provide motherboard-level or electrical repair instructions.</p>{% endif %}<dl><dt>Possible causes</dt><dd><ul>{% for c in node.causes %}<li>{{ c }}</li>{% endfor %}</ul></dd></dl><div class="report-callout"><strong>Bring the report with you.</strong><p>It records the problem and the steps already tried, so a technician does not have to start from zero.</p></div><div class="actions"><a class="btn btn-primary" href="{{ url_for('reports.current_report') }}">View report</a><a class="btn btn-ghost" href="{{ url_for('reports.current_pdf') }}">Download PDF</a><a class="btn btn-ghost" href="{{ url_for('troubleshoot.restart') }}">Start over</a></div></div>
   {% endif %}
+
+  {% if node.type in ('resolved', 'escalate') %}<div class="after-actions"><form method="post" action="{{ url_for('troubleshoot.teach') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="level" value="beginner"><button type="submit" class="btn btn-ghost">Teach me what happened</button></form><p class="hint">{% if ts.db_id %}Saved to your <a href="{{ url_for('history.list_sessions') }}">history</a>.{% else %}Create an account to keep this session and its report.{% endif %}</p></div>{% endif %}
 </section>
 {% endblock %}

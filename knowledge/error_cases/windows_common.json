@@ -1,0 +1,457 @@
+{
+ "cases": [
+  {
+   "id": "net_no_internet",
+   "title": "Browser says there is no internet connection",
+   "patterns": ["err_internet_disconnected", "you are not connected to the internet", "no internet connection"],
+   "category": "network",
+   "meaning": "The browser could not reach the internet at all. The problem is usually between the computer and the router, not the website.",
+   "causes": ["Wi-Fi is off or connected to the wrong network", "The router or modem has lost its connection", "A network adapter or driver problem"]
+  },
+  {
+   "id": "net_dns",
+   "title": "Website address could not be found (DNS error)",
+   "patterns": ["dns_probe_finished_no_internet", "dns_probe_finished_bad_config", "err_name_not_resolved", "server dns address could not be found", "dns server isn't responding"],
+   "category": "network",
+   "meaning": "The computer is on a network but could not turn a website name into an address. Other devices on the same network may or may not have the same problem.",
+   "causes": ["The DNS server given by the router is not answering", "A stale DNS cache on the computer", "The internet connection behind the router is down"]
+  },
+  {
+   "id": "net_timeout",
+   "title": "Connection timed out",
+   "patterns": ["err_connection_timed_out", "took too long to respond"],
+   "category": "network",
+   "meaning": "The browser reached out but got no reply in time. It can be the website, but a weak or unstable connection is also common.",
+   "causes": ["A weak or unstable Wi-Fi signal", "A slow or interrupted internet service", "A proxy, VPN or firewall setting blocking the connection"]
+  },
+  {
+   "id": "net_limited",
+   "title": "Connected to Wi-Fi but with no internet",
+   "patterns": ["limited connectivity", "unidentified network", "no internet, secured"],
+   "category": "network",
+   "meaning": "The computer joined the Wi-Fi network, but that network is not giving it a working path to the internet.",
+   "causes": ["The router has no internet from the provider", "The computer did not receive a valid IP address", "A captive login page that has not been completed"]
+  },
+  {
+   "id": "usb_not_recognized",
+   "title": "USB device not recognized",
+   "patterns": ["usb device not recognized", "unknown usb device", "device descriptor request failed"],
+   "category": "usb",
+   "meaning": "Windows detected that something was plugged in but could not identify it or talk to it.",
+   "causes": ["A faulty cable or port", "A driver problem", "Not enough power from the port or hub"]
+  },
+  {
+   "id": "usb_malfunctioned",
+   "title": "The last USB device malfunctioned",
+   "patterns": ["the last usb device you connected to this computer malfunctioned"],
+   "category": "usb",
+   "meaning": "Windows tried to use the USB device and it failed to respond properly.",
+   "causes": ["The device or its cable has a fault", "A driver problem", "A port that is not supplying stable power"]
+  },
+  {
+   "id": "print_offline",
+   "title": "Printer is offline",
+   "patterns": ["printer is offline", "printer offline", "printer status: offline"],
+   "category": "printer",
+   "meaning": "The computer cannot currently reach the printer, even if the printer looks switched on.",
+   "causes": ["The printer lost its Wi-Fi or cable connection", "The printer is set to 'Use Printer Offline'", "The print queue or spooler is stuck"]
+  },
+  {
+   "id": "print_driver",
+   "title": "Printer driver is unavailable",
+   "patterns": ["printer driver is unavailable", "driver is unavailable"],
+   "category": "printer",
+   "meaning": "Windows has the printer listed but the software that lets it talk to the printer is missing or damaged.",
+   "causes": ["The driver was removed or damaged after an update", "The wrong driver is installed for this printer model"]
+  },
+  {
+   "id": "print_connect",
+   "title": "Windows cannot connect to the printer",
+   "patterns": ["windows cannot connect to the printer", "0x0000011b", "0x00000709", "0x00000bcb"],
+   "category": "printer",
+   "meaning": "Windows could not connect to a shared or network printer. This often appears after a Windows update or when the sharing computer is off.",
+   "causes": ["The computer sharing the printer is off or unreachable", "A security change from a recent Windows update", "A missing or mismatched driver"]
+  },
+  {
+   "id": "print_spooler",
+   "title": "Print spooler is not running",
+   "patterns": ["print spooler service is not running", "spooler subsystem app"],
+   "category": "printer",
+   "meaning": "The Windows service that manages print jobs has stopped, so nothing can be sent to any printer.",
+   "causes": ["The spooler service was stopped or crashed", "A stuck print job blocking the queue"]
+  },
+  {
+   "id": "disp_tdr",
+   "title": "Display driver stopped responding and has recovered",
+   "patterns": ["display driver stopped responding and has recovered", "video_tdr_failure", "nvlddmkm", "atikmpag"],
+   "category": "display",
+   "meaning": "The graphics driver froze for a moment and Windows restarted it. The screen may flicker or go black for a few seconds when this happens.",
+   "causes": ["An outdated or damaged graphics driver", "Heavy graphics load on a computer that is running hot", "A graphics settings conflict"]
+  },
+  {
+   "id": "disp_no_signal",
+   "title": "Monitor says no signal",
+   "patterns": ["no signal", "input signal not found", "check signal cable", "no video signal"],
+   "category": "display",
+   "meaning": "The monitor is on but is not receiving a picture from the computer.",
+   "causes": ["A loose or wrong video cable or input selected on the monitor", "The computer is asleep or still starting", "The graphics output is not sending a signal"],
+   "generic": true
+  },
+  {
+   "id": "audio_no_device",
+   "title": "No audio output device is installed",
+   "patterns": ["no audio output device is installed", "no audio devices are installed", "audio output device is not plugged in"],
+   "category": "audio",
+   "meaning": "Windows cannot find any sound output, so nothing can play through the speakers or headphones.",
+   "causes": ["The audio driver is missing, disabled or damaged", "The audio service stopped running", "The device is disabled in Windows sound settings"]
+  },
+  {
+   "id": "audio_service",
+   "title": "Audio service is not running",
+   "patterns": ["audio service isn't running", "audio services aren't responding", "audio services not responding"],
+   "category": "audio",
+   "meaning": "The Windows service that handles sound has stopped, so sound stops working until it is restarted.",
+   "causes": ["The Windows Audio service stopped or crashed", "A recent driver or Windows update"]
+  },
+  {
+   "id": "bt_connect",
+   "title": "Bluetooth device could not connect",
+   "patterns": ["couldn't connect. try connecting your device again", "bluetooth peripheral device"],
+   "category": "bluetooth",
+   "meaning": "Windows could not finish pairing or reconnecting with the Bluetooth device.",
+   "causes": ["The device is not in pairing mode or is out of range", "An old pairing that needs to be removed and added again", "A Bluetooth driver problem"]
+  },
+  {
+   "id": "stor_format",
+   "title": "You need to format the disk before you can use it",
+   "patterns": ["you need to format the disk", "you need to format the disk in drive"],
+   "category": "storage",
+   "meaning": "Windows can see the drive but cannot read its file system. Do not format it if it holds files you need.",
+   "causes": ["The drive was removed without being ejected safely", "Corruption in the file system", "A new drive that has never been set up"]
+  },
+  {
+   "id": "stor_write_protected",
+   "title": "The disk is write protected",
+   "patterns": ["the disk is write protected", "the media is write protected"],
+   "category": "storage",
+   "meaning": "Windows will let you read the drive but not save or delete anything on it.",
+   "causes": ["A physical lock switch on the drive or card", "A read-only setting on the drive", "A drive that has developed a fault"]
+  },
+  {
+   "id": "stor_full",
+   "title": "Low disk space",
+   "patterns": ["low disk space", "you are running out of disk space", "there is not enough space on the disk"],
+   "category": "storage",
+   "meaning": "The drive is nearly full, which can stop saving, updating and installing, and can slow the computer down.",
+   "causes": ["Large files, downloads or old updates", "Temporary files and the recycle bin"]
+  },
+  {
+   "id": "stor_corrupt",
+   "title": "File or directory is corrupted and unreadable",
+   "patterns": ["the file or directory is corrupted and unreadable"],
+   "category": "storage",
+   "meaning": "Windows could not read part of the drive. Avoid saving anything new to it until it has been checked.",
+   "causes": ["File system errors from an unsafe removal or power loss", "A drive that is starting to fail"]
+  },
+  {
+   "id": "batt_not_charging",
+   "title": "Plugged in, not charging",
+   "patterns": ["plugged in, not charging", "plugged in not charging"],
+   "category": "battery",
+   "meaning": "The laptop sees the charger but is not charging the battery.",
+   "causes": ["A charger or cable that is not supplying enough power", "A battery or power driver problem", "A battery that has worn down"]
+  },
+  {
+   "id": "batt_replace",
+   "title": "Consider replacing your battery",
+   "patterns": ["consider replacing your battery", "no battery is detected"],
+   "category": "battery",
+   "meaning": "Windows reports that the battery is worn or cannot be read. It may still work, but with much shorter run time.",
+   "causes": ["Normal battery wear over time", "A battery that is not detected correctly"]
+  },
+  {
+   "id": "perf_memory",
+   "title": "Computer is low on memory",
+   "patterns": ["your computer is low on memory", "low on memory"],
+   "category": "performance",
+   "meaning": "Too many programs are using memory at once, so Windows is struggling to keep everything running.",
+   "causes": ["Too many apps or browser tabs open", "A program using far more memory than it should", "Not enough memory installed for the work being done"],
+   "generic": true
+  },
+  {
+   "id": "perf_not_responding",
+   "title": "Program is not responding",
+   "patterns": ["not responding"],
+   "category": "performance",
+   "meaning": "A program has stopped answering Windows. It is sometimes just busy, and sometimes frozen.",
+   "causes": ["The program is busy with a heavy task", "The computer is short on memory or disk speed", "A bug or conflict in that program"],
+   "generic": true
+  },
+  {
+   "id": "input_no_keyboard",
+   "title": "No keyboard detected",
+   "patterns": ["keyboard error or no keyboard present", "no keyboard detected"],
+   "category": "input",
+   "meaning": "The computer could not find a working keyboard at startup.",
+   "causes": ["A loose or unplugged keyboard cable or USB receiver", "A keyboard that has no power or a dead battery", "A faulty USB port"]
+  },
+  {
+   "id": "boot_hal_init",
+   "title": "Blue screen: HAL_INITIALIZATION_FAILED",
+   "patterns": [
+    "hal_initialization_failed",
+    "hal initialization failed"
+   ],
+   "category": "boot",
+   "meaning": "Windows stopped while it was setting up the basic layer that talks to the hardware, so it could not finish starting. The cause is often a recent change or a problem with a connected device or the drive.",
+   "causes": [
+    "A recent Windows update or driver change",
+    "A connected USB device or drive getting in the way",
+    "Damaged Windows startup files",
+    "A problem with the drive or memory"
+   ]
+  },
+  {
+   "id": "boot_inaccessible",
+   "title": "Blue screen: INACCESSIBLE_BOOT_DEVICE",
+   "patterns": [
+    "inaccessible_boot_device",
+    "inaccessible boot device"
+   ],
+   "category": "boot",
+   "meaning": "Windows could not read the drive it needs to start from. It often appears after an update or a change to the drive settings.",
+   "causes": [
+    "A recent Windows update",
+    "Damaged Windows startup files",
+    "A drive that is not detected or is failing",
+    "A changed storage setting"
+   ]
+  },
+  {
+   "id": "boot_unmountable",
+   "title": "Blue screen: UNMOUNTABLE_BOOT_VOLUME",
+   "patterns": [
+    "unmountable_boot_volume",
+    "unmountable boot volume"
+   ],
+   "category": "boot",
+   "meaning": "Windows found the drive but could not open the part of it that holds Windows. The file system on that part may have errors.",
+   "causes": [
+    "File system errors after a sudden shutdown",
+    "Damaged Windows startup files",
+    "A drive that may be failing"
+   ]
+  },
+  {
+   "id": "boot_critical_process",
+   "title": "Blue screen: CRITICAL_PROCESS_DIED",
+   "patterns": [
+    "critical_process_died",
+    "critical process died"
+   ],
+   "category": "boot",
+   "meaning": "A program that Windows cannot run without stopped unexpectedly, so Windows shut itself down to protect your files.",
+   "causes": [
+    "A faulty or recently changed driver",
+    "A recent Windows update",
+    "Damaged system files",
+    "A drive or memory problem"
+   ]
+  },
+  {
+   "id": "boot_system_service",
+   "title": "Blue screen: SYSTEM_SERVICE_EXCEPTION",
+   "patterns": [
+    "system_service_exception",
+    "system service exception"
+   ],
+   "category": "boot",
+   "meaning": "A part of Windows or a driver did something it should not, and Windows stopped to protect itself. It is often linked to a driver or a newly installed app.",
+   "causes": [
+    "A faulty or outdated driver",
+    "A newly installed app or update",
+    "Damaged system files"
+   ]
+  },
+  {
+   "id": "boot_system_thread",
+   "title": "Blue screen: SYSTEM_THREAD_EXCEPTION_NOT_HANDLED",
+   "patterns": [
+    "system_thread_exception_not_handled",
+    "system thread exception not handled"
+   ],
+   "category": "boot",
+   "meaning": "A driver or system part hit an error that Windows could not handle. The blue screen may name a file ending in .sys, which points toward the driver involved.",
+   "causes": [
+    "A faulty or outdated driver",
+    "A recent Windows update",
+    "Damaged system files"
+   ]
+  },
+  {
+   "id": "boot_irql",
+   "title": "Blue screen: IRQL_NOT_LESS_OR_EQUAL",
+   "patterns": [
+    "irql_not_less_or_equal",
+    "irql not less or equal"
+   ],
+   "category": "boot",
+   "meaning": "A driver or program tried to use memory in a way it is not allowed to, so Windows stopped. It is most often linked to drivers, and sometimes to memory.",
+   "causes": [
+    "A faulty or outdated driver",
+    "A newly installed app or device",
+    "A problem with the memory"
+   ]
+  },
+  {
+   "id": "boot_page_fault",
+   "title": "Blue screen: PAGE_FAULT_IN_NONPAGED_AREA",
+   "patterns": [
+    "page_fault_in_nonpaged_area",
+    "page fault in nonpaged area"
+   ],
+   "category": "boot",
+   "meaning": "Windows looked for something in memory that should have been there and could not find it. It is often linked to a driver, an app, or the memory.",
+   "causes": [
+    "A faulty or recently changed driver",
+    "A problem with the memory",
+    "A drive or file system problem"
+   ]
+  },
+  {
+   "id": "boot_memory_mgmt",
+   "title": "Blue screen: MEMORY_MANAGEMENT",
+   "patterns": [
+    "memory_management"
+   ],
+   "category": "boot",
+   "meaning": "Windows found a problem in the way memory is being used. It can come from a driver, and sometimes from the memory itself.",
+   "causes": [
+    "A problem with the memory",
+    "A faulty or outdated driver",
+    "A newly installed app or device"
+   ]
+  },
+  {
+   "id": "boot_kernel_security",
+   "title": "Blue screen: KERNEL_SECURITY_CHECK_FAILURE",
+   "patterns": [
+    "kernel_security_check_failure",
+    "kernel security check failure"
+   ],
+   "category": "boot",
+   "meaning": "Windows noticed that something important in its memory had been changed in the wrong way, and it stopped to protect the computer.",
+   "causes": [
+    "A faulty or outdated driver",
+    "A problem with the memory",
+    "Damaged system files",
+    "A recent Windows update"
+   ]
+  },
+  {
+   "id": "boot_whea",
+   "title": "Blue screen: WHEA_UNCORRECTABLE_ERROR",
+   "patterns": [
+    "whea_uncorrectable_error",
+    "whea uncorrectable error"
+   ],
+   "category": "boot",
+   "meaning": "The computer reported a hardware error that it could not correct. This kind of message can point to a hardware problem, and heat can also play a part.",
+   "causes": [
+    "Too much heat or blocked vents",
+    "A problem with the memory, drive or processor",
+    "A faulty driver"
+   ]
+  },
+  {
+   "id": "boot_watchdog",
+   "title": "Blue screen: DPC_WATCHDOG_VIOLATION or CLOCK_WATCHDOG_TIMEOUT",
+   "patterns": [
+    "dpc_watchdog_violation",
+    "dpc watchdog violation",
+    "clock_watchdog_timeout",
+    "clock watchdog timeout"
+   ],
+   "category": "boot",
+   "meaning": "Something kept the computer busy for too long, so Windows stopped. It is often linked to a driver, a storage device, or an old firmware.",
+   "causes": [
+    "A faulty or outdated driver",
+    "A problem with the drive",
+    "A recent update"
+   ]
+  },
+  {
+   "id": "boot_generic_bsod",
+   "title": "Blue screen: your PC ran into a problem",
+   "patterns": [
+    "your pc ran into a problem and needs to restart",
+    "your device ran into a problem and needs to restart"
+   ],
+   "category": "boot",
+   "meaning": "Windows has stopped because of an error it could not recover from. The stop code on the same screen tells more about the cause, so write it down.",
+   "causes": [
+    "A faulty or recently changed driver",
+    "A recent Windows update",
+    "A problem with the memory or drive",
+    "Too much heat"
+   ]
+  },
+  {
+   "id": "boot_no_bootable",
+   "title": "No bootable device or operating system not found",
+   "patterns": [
+    "no bootable device",
+    "no boot device found",
+    "boot device not found",
+    "operating system not found",
+    "an operating system wasn't found",
+    "reboot and select proper boot device",
+    "no bootable medium found"
+   ],
+   "category": "boot",
+   "meaning": "The computer could not find Windows on any drive it checked. A USB drive may be getting in the way, or the drive that holds Windows may not be detected.",
+   "causes": [
+    "A USB drive or card left plugged in",
+    "The drive that holds Windows is not detected",
+    "Damaged startup files",
+    "A failing drive"
+   ]
+  },
+  {
+   "id": "boot_bootmgr",
+   "title": "BOOTMGR is missing or the boot selection failed",
+   "patterns": [
+    "bootmgr is missing",
+    "bootmgr is compressed",
+    "boot selection failed",
+    "0xc000000f",
+    "0xc0000225",
+    "0xc000000e"
+   ],
+   "category": "boot",
+   "meaning": "The first part of Windows that starts the computer could not be found or read. The startup files may be damaged or the drive may not be detected.",
+   "causes": [
+    "Damaged or missing startup files",
+    "A USB drive getting in the way",
+    "The drive is not detected or may be failing"
+   ]
+  },
+  {
+   "id": "boot_auto_repair",
+   "title": "Automatic Repair loop",
+   "patterns": [
+    "preparing automatic repair",
+    "diagnosing your pc",
+    "automatic repair couldn't repair your pc"
+   ],
+   "category": "boot",
+   "meaning": "Windows could not start normally, so it is trying to repair itself. If this keeps repeating, Windows needs another way to repair its startup.",
+   "causes": [
+    "Damaged Windows startup files",
+    "A recent update or driver change",
+    "A forced shutdown while Windows was loading",
+    "A drive problem"
+   ]
+  }
+ ]
+}

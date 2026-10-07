@@ -1,0 +1,3 @@
+.report .actions { margin-top: 1rem; }
+@media (max-width: 680px) { .report .actions { flex-direction: column; align-items: stretch; } .report .actions .btn { width: 100%; } }
+@media print { .report .actions, .report .plain { display: none !important; } }

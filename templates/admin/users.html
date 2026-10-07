@@ -1,0 +1,25 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Users · Admin · FixWise AI{% endblock %}
+{% block admin %}
+<h1>Users</h1>
+<div class="table-wrap">
+<table class="admin-table">
+  <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Joined</th><th scope="col" class="num">Sessions</th></tr></thead>
+  <tbody>
+  {% for u in pagination.items %}
+    <tr>
+      <td>{{ u.name }}</td>
+      <td>{{ u.email }}</td>
+      <td>{% if u.role == 'ADMIN' %}<span class="badge badge-active">Admin</span>{% else %}User{% endif %}</td>
+      <td>{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '' }}</td>
+      <td class="num">{{ counts.get(u.id, 0) }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="empty">No users yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "admin/_pager.html" %}
+<p class="note">To make someone an admin, they register first, then run <code>python make_admin.py their@email.com</code> on the server.</p>
+{% endblock %}

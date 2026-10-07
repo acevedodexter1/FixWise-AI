@@ -1,0 +1,18 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}AI · Admin · FixWise AI{% endblock %}
+{% block admin %}
+<h1>AI settings</h1>
+<p class="lead">Read-only. These come from the <code>.env</code> file, and the API key is never shown here.</p>
+
+<dl class="meta ai-meta">
+  <dt>Status</dt><dd>{% if ai.enabled %}<span class="badge badge-resolved">On</span>{% else %}<span class="badge badge-unresolved">Off: keyword matching only</span>{% endif %}</dd>
+  <dt>Provider</dt><dd>{{ ai.provider_host }}</dd>
+  <dt>Text model</dt><dd>{{ ai.model }}</dd>
+  <dt>Screenshot model</dt><dd>{% if ai.uses_model_for_images %}Same as the text model. If screenshots fail, set a model that accepts images in <code>AI_VISION_MODEL</code>.{% else %}{{ ai.vision_model }}{% endif %}</dd>
+  <dt>Problems understood by AI</dt><dd>{{ stats.ai_analyses }}</dd>
+  <dt>Problems matched by keywords</dt><dd>{{ stats.keyword_analyses }}</dd>
+  <dt>Teach Me lessons saved</dt><dd>{{ stats.lessons }}</dd>
+</dl>
+
+<p class="note">To change these, edit <code>AI_API_KEY</code>, <code>AI_BASE_URL</code>, <code>AI_MODEL</code> or <code>AI_VISION_MODEL</code> in <code>.env</code> and restart the app. Screenshots are limited to 5 per visitor visit to protect the free AI limit.</p>
+{% endblock %}

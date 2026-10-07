@@ -1,0 +1,44 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin · FixWise AI{% endblock %}
+{% block admin %}
+<h1>Admin overview</h1>
+
+<dl class="stats">
+  <div><dt>Users</dt><dd>{{ stats.users }}</dd><span class="note">{{ stats.new_users }} new in {{ stats.days }} days · {{ stats.admins }} admin{{ '' if stats.admins == 1 else 's' }}</span></div>
+  <div><dt>Saved sessions</dt><dd>{{ stats.sessions }}</dd><span class="note">{{ stats.recent_sessions }} started in {{ stats.days }} days</span></div>
+  <div><dt>Solved</dt><dd>{% if stats.resolved_rate is none %}n/a{% else %}{{ stats.resolved_rate }}%{% endif %}</dd><span class="note">of sessions that reached a result</span></div>
+  <div><dt>Saved devices</dt><dd>{{ stats.devices }}</dd><span class="note">across all users</span></div>
+</dl>
+<p class="note">Guest sessions are not saved, so these numbers cover registered users only.</p>
+
+<div class="admin-cols">
+  <section>
+    <h2>How sessions ended</h2>
+    {% for key, label, count in stats.by_status %}
+      <div class="bar">
+        <span class="bar-label">{{ 'Referred to a technician' if key == 'ESCALATED' else label }}</span>
+        <div class="bar-track"><div class="bar-fill bar-{{ key|lower }}" style="width: {{ (count / stats.sessions * 100)|round(1) if stats.sessions else 0 }}%"></div></div>
+        <span class="bar-n">{{ count }}</span>
+      </div>
+    {% endfor %}
+  </section>
+
+  <section>
+    <h2>Problem areas</h2>
+    {% if stats.by_category %}
+      {% for c in stats.by_category %}
+        <div class="bar">
+          <span class="bar-label">{{ c.label }}</span>
+          <div class="bar-track"><div class="bar-fill" style="width: {{ (c.count / stats.by_category[0].count * 100)|round(1) }}%"></div></div>
+          <span class="bar-n">{{ c.count }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="empty">No sessions saved yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+<h2>AI use</h2>
+<p>{{ stats.ai_analyses }} problem{{ '' if stats.ai_analyses == 1 else 's' }} understood by the AI, {{ stats.keyword_analyses }} by keyword matching, {{ stats.lessons }} Teach Me lesson{{ '' if stats.lessons == 1 else 's' }} saved. <a href="{{ url_for('admin.ai_settings') }}">AI settings</a></p>
+{% endblock %}

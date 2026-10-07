@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}My devices · FixWise AI{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">{% endblock %}
+{% block content %}
+<section class="wrap dash">
+  <div class="page-head">
+    <div><p class="eyebrow">Saved devices</p><h1>My devices</h1><p class="lead">Keep the details you use often so FixWise can add them to future troubleshooting reports.</p></div>
+    <a class="btn btn-primary" href="{{ url_for('devices.add') }}">+ Add device</a>
+  </div>
+
+  {% if devices %}
+    <div class="device-grid">
+      {% for d in devices %}
+      <article class="device-card">
+        <div class="device-icon" aria-hidden="true">{{ d.device_type[:1] }}</div>
+        <div class="device-main">
+          <div class="device-title-row"><strong class="device-name">{{ d.name }}</strong><span class="badge badge-active">Saved</span></div>
+          <span class="device-summary">{{ d.device_type }}{% if d.brand or d.model %} · {{ [d.brand, d.model]|select|join(' ') }}{% endif %}{% if d.os %} · {{ d.os }}{% endif %}</span>
+          {% if d.notes %}<span class="device-notes">{{ d.notes }}</span>{% endif %}
+          <div class="device-actions">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('devices.edit', device_id=d.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('devices.delete', device_id=d.id) }}" data-name="{{ d.name }}" onsubmit="return confirm('Delete ' + this.dataset.name + '? Reports you already made keep their device details.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-ghost btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="page-foot"><p class="hint">{{ devices|length }} of {{ limit }} devices saved.</p></div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">+</div>
+      <h2>No saved devices yet</h2>
+      <p class="lead">Add a device once and you can select it during troubleshooting. Its details can also appear in technician reports.</p>
+      <a class="btn btn-primary" href="{{ url_for('devices.add') }}">Add your first device</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

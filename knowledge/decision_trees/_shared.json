@@ -1,0 +1,23 @@
+{
+ "nodes": {
+  "x_hazard": {
+   "type": "escalate",
+   "hardware": false,
+   "reason": "This may be a safety hazard. Turn the device off, unplug it, keep it away from anything flammable, and stop using it until a technician has checked it. Do not open it yourself.",
+   "causes": [
+    "Overheating component",
+    "Damaged or swollen battery",
+    "Faulty charger or power adapter",
+    "Liquid damage"
+   ]
+  },
+  "x_scope": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "Your problem may require specialized hardware diagnostics. FixWise AI only gives safe, user-level troubleshooting steps.",
+   "causes": [
+    "Hardware fault that needs specialist tools to diagnose"
+   ]
+  }
+ }
+}

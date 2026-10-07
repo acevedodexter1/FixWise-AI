@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{% if device %}Edit device{% else %}Add a device{% endif %} · FixWise AI{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">{% endblock %}
+{% block content %}
+<section class="auth wrap device-form-page">
+  <a class="back-link" href="{{ url_for('devices.list_devices') }}">← My devices</a>
+  <div class="auth-header"><div class="eyebrow">Device details</div><h1>{% if device %}Edit device{% else %}Add a device{% endif %}</h1><p class="lead">Only add what you know. You can update these details later.</p></div>
+  <form method="post" class="auth-form" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-grid">
+      <div class="field span-2">{{ form.name.label }}{{ form.name(placeholder="School laptop", autocomplete="off") }}{% for e in form.name.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+      <div class="field">{{ form.device_type.label }}{{ form.device_type() }}{% for e in form.device_type.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+      <div class="field">{{ form.os.label }}{{ form.os() }}{% for e in form.os.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+      <div class="field">{{ form.brand.label }}{{ form.brand(placeholder="Acer", autocomplete="off") }}{% for e in form.brand.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+      <div class="field">{{ form.model.label }}{{ form.model(placeholder="Aspire 5 A515", autocomplete="off") }}{% for e in form.model.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+      <div class="field span-2">{{ form.notes.label }}{{ form.notes(rows=4, placeholder="Anything useful for a technician to know.") }}<p class="hint">Up to 300 characters.</p>{% for e in form.notes.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+    </div>
+    <div class="actions form-actions"><button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button><a class="btn btn-ghost" href="{{ url_for('devices.list_devices') }}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

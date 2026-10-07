@@ -1,0 +1,15 @@
+{% if current_user.is_authenticated %}
+  <div class="field device-pick">
+    {% if devices %}
+      <label for="device_id">Which device is this about? <span class="optional">(optional)</span></label>
+      <select id="device_id" name="device_id">
+        <option value="">No saved device</option>
+        {% for d in devices %}
+          <option value="{{ d.id }}">{{ d.name }} · {{ d.device_type }}{% if d.os %} · {{ d.os }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <p class="hint"><a href="{{ url_for('devices.add') }}">Add a device</a> so your reports can include its details.</p>
+    {% endif %}
+  </div>
+{% endif %}

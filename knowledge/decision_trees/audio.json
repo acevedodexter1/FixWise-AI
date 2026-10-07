@@ -1,0 +1,134 @@
+{
+ "category": "audio",
+ "label": "Audio",
+ "prefix": "a_",
+ "order": 3,
+ "pick_label": "There is no sound, or the microphone is not working",
+ "keywords": [
+  "sound",
+  "audio",
+  "speaker",
+  "headphone",
+  "earphone",
+  "microphone",
+  "volume"
+ ],
+ "start": "a_start",
+ "nodes": {
+  "a_start": {
+   "type": "question",
+   "text": "Did the sound stop after you plugged in or removed headphones, speakers or a Bluetooth device?",
+   "why": "Windows sends sound to one output device at a time, and changes in connected devices can switch it.",
+   "options": [
+    {
+     "label": "Yes",
+     "next": "a_disconnect"
+    },
+    {
+     "label": "No",
+     "next": "a_volume"
+    }
+   ]
+  },
+  "a_disconnect": {
+   "type": "step",
+   "title": "Disconnect extra audio devices",
+   "do": "Unplug headphones and USB speakers, turn off Bluetooth audio devices, then play a sound.",
+   "why": "Windows may still be sending audio to a device that is no longer there.",
+   "expect": "Sound may return to the built-in speakers straight away.",
+   "fixed": "a_done_disconnect",
+   "not_fixed": "a_output"
+  },
+  "a_done_disconnect": {
+   "type": "resolved",
+   "cause": "Audio was routed to a disconnected or different device.",
+   "learn": "Windows keeps a default output device. When devices come and go, the default can point at the wrong one."
+  },
+  "a_volume": {
+   "type": "step",
+   "title": "Check volume and mute",
+   "do": "Click the speaker icon near the clock. Make sure the volume is up and not muted, then open the volume mixer and check the app you are using is not turned down.",
+   "why": "Master volume and per-app volume are separate, so one can be silent while the other is fine.",
+   "expect": "You should see the volume level change as you move the slider.",
+   "fixed": "a_done_volume",
+   "not_fixed": "a_output"
+  },
+  "a_done_volume": {
+   "type": "resolved",
+   "cause": "Volume muted or an app turned down.",
+   "learn": "Windows has a master volume, a volume for each app, and sometimes a hardware mute key. Any of them can silence sound."
+  },
+  "a_output": {
+   "type": "step",
+   "title": "Choose the correct output device",
+   "do": "Open Settings > System > Sound. Under Output, pick your speakers or headphones, then play a sound.",
+   "why": "Sound only plays through the selected output device.",
+   "expect": "The level meter next to the device should move when audio plays.",
+   "fixed": "a_done_output",
+   "not_fixed": "a_troubleshooter"
+  },
+  "a_done_output": {
+   "type": "resolved",
+   "cause": "Wrong default output device selected.",
+   "learn": "Output devices are listed in Sound settings. Choosing the right one tells Windows where to send audio."
+  },
+  "a_troubleshooter": {
+   "type": "step",
+   "title": "Run the Windows sound troubleshooter",
+   "do": "Open Settings > System > Sound and choose Troubleshoot common sound problems. Follow the prompts.",
+   "why": "It checks the audio service, device status and some settings, and can apply common fixes.",
+   "expect": "Windows scans, then reports what it found or fixed.",
+   "fixed": "a_done_troubleshooter",
+   "not_fixed": "a_service"
+  },
+  "a_done_troubleshooter": {
+   "type": "resolved",
+   "cause": "A sound setting or service was misconfigured.",
+   "learn": "Built-in troubleshooters run a checklist of known causes, which is a safe first diagnostic tool."
+  },
+  "a_service": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "This runs a command as administrator. Type it exactly as shown and nothing else.",
+   "title": "Restart the Windows Audio service",
+   "do": "Open Windows PowerShell as administrator (right-click Start) and run the command below.",
+   "command": "Restart-Service Audiosrv -Force",
+   "why": "This reloads the service that handles all sound on Windows.",
+   "expect": "Sound may cut out for a moment; some apps need to be reopened.",
+   "technical": "Restarts the Audiosrv service that mixes and routes all audio streams.",
+   "fixed": "a_done_service",
+   "not_fixed": "a_driver"
+  },
+  "a_done_service": {
+   "type": "resolved",
+   "cause": "Windows Audio service had stopped responding.",
+   "learn": "A Windows service is a background program. If the audio service hangs, no app can play sound until it restarts."
+  },
+  "a_driver": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only uninstall the device named in this step and leave 'Delete the driver' unticked. Windows installs it again when you restart.",
+   "title": "Reinstall the audio driver",
+   "do": "Right-click Start > Device Manager > Sound, video and game controllers. Right-click your audio device, choose Uninstall device (leave 'delete the driver' unticked), then restart.",
+   "why": "Windows reinstalls a fresh copy of the driver at startup, replacing a corrupted one.",
+   "expect": "Windows detects the device again after the restart.",
+   "fixed": "a_done_driver",
+   "not_fixed": "a_pro_audio"
+  },
+  "a_done_driver": {
+   "type": "resolved",
+   "cause": "Corrupted or misbehaving audio driver.",
+   "learn": "A driver is the software that lets Windows talk to hardware. A corrupted driver can make working hardware appear dead."
+  },
+  "a_pro_audio": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe software checks are done. The speakers or audio hardware may need testing by a technician; this cannot be confirmed from here.",
+   "causes": [
+    "Audio driver problem",
+    "Speaker or headphone jack hardware fault",
+    "Audio hardware not detected"
+   ]
+  }
+ }
+}

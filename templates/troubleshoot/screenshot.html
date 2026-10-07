@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Check an error · FixWise AI{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/troubleshoot.css') }}">{% endblock %}
+{% block content %}
+<section class="ts wrap">
+  <div class="ts-top"><div><div class="eyebrow">Error helper</div><h1>Check an error</h1><span class="cat">Upload a screenshot or type the message you see.</span></div><a class="back-link" href="{{ url_for('home.home') }}">← Home</a></div>
+
+  {% if result %}
+    {% if result.notice %}<p class="shot-notice" role="status">{{ result.notice }}</p>{% endif %}
+    {% if result.problem %}
+    <div class="card card-found"><div class="result-title"><span class="result-icon">✓</span><div><span class="eyebrow">Analysis ready</span><h2>Here’s what I found</h2></div></div>
+      <dl>{% if result.transcript %}<dt>Error on the screen</dt><dd><blockquote class="shot-quote">{{ result.transcript }}</blockquote></dd>{% endif %}{% if result.match %}<dt>{{ result.match.title }}</dt><dd>{{ result.match.meaning }}</dd><dt>Possible causes</dt><dd><ul>{% for c in result.match.causes %}<li>{{ c }}</li>{% endfor %}</ul></dd>{% else %}<dt>Known error</dt><dd>I do not recognise this exact message yet. You can still continue with guided troubleshooting.</dd>{% endif %}{% if result.category_label %}<dt>Closest area</dt><dd>{{ result.category_label }}</dd>{% endif %}</dl>
+      <p class="note">Check the text below before starting. You can correct it when needed.</p>
+      <form method="post" action="{{ url_for('troubleshoot.start') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="category_hint" value="{{ result.category }}"><div class="field"><label for="problem">Problem description</label><textarea id="problem" name="problem" rows="4" maxlength="1000" required>{{ result.problem }}</textarea></div>{% include "_device_select.html" %}<div class="actions"><button type="submit" class="btn btn-primary">Start guided troubleshooting</button></div></form>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="card shot-card">
+    <div class="section-heading"><div class="eyebrow">Optional screenshot</div><h2>{% if result %}Check another error{% else %}Show me the error{% endif %}</h2><p>Use a screenshot when the message is hard to copy.</p></div>
+    <form method="post" action="{{ url_for('ai.screenshot') }}" enctype="multipart/form-data" id="shot-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if ai_enabled %}<div class="upload-box"><div class="upload-icon" aria-hidden="true">↑</div><div><label for="screenshot">Choose screenshot</label><p class="hint">PNG, JPG or WebP, up to 5 MB.</p></div><input type="file" id="screenshot" name="screenshot" accept="image/png,image/jpeg,image/webp"></div><p class="hint">Before uploading, cover passwords and other private information.</p><p class="field-error" id="shot-error" role="alert" hidden></p><img id="shot-preview" class="shot-preview" alt="Preview of the chosen screenshot" hidden>{% else %}<p class="note">Screenshot reading is off right now. Type the error message below instead.</p>{% endif %}
+      <div class="field"><label for="error_text">Error message {% if ai_enabled %}<span class="optional">(optional with a screenshot)</span>{% endif %}</label><textarea id="error_text" name="error_text" rows="3" maxlength="500" placeholder="Example: DNS_PROBE_FINISHED_NO_INTERNET"></textarea></div>
+      <div class="actions"><button type="submit" class="btn btn-primary" id="shot-submit">Check error</button></div>
+    </form>
+  </div>
+</section>
+<script src="{{ url_for('static', filename='js/screenshot.js') }}" defer></script>
+{% endblock %}

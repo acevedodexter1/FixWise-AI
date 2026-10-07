@@ -1,0 +1,150 @@
+{
+ "category": "storage",
+ "label": "Storage",
+ "prefix": "s_",
+ "order": 10,
+ "pick_label": "The disk is almost full or I can't open or save files",
+ "keywords": [
+  "storage",
+  "disk full",
+  "drive full",
+  "disk space",
+  "out of space",
+  "no space",
+  "low space",
+  "hard drive",
+  "ssd",
+  "hdd",
+  "free up space"
+ ],
+ "start": "s_start",
+ "nodes": {
+  "s_start": {
+   "type": "question",
+   "text": "What is the storage problem?",
+   "why": "Each problem has different checks, and a drive that may be failing needs extra care to protect your files.",
+   "options": [
+    {
+     "label": "The drive is almost full or I get low space warnings",
+     "next": "s_sense"
+    },
+    {
+     "label": "I can't open or save files (access denied or read-only)",
+     "next": "s_ro"
+    },
+    {
+     "label": "Files open very slowly, or the drive clicks, grinds or disconnects",
+     "next": "s_health"
+    }
+   ]
+  },
+  "s_sense": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Emptying the Recycle Bin is permanent. Look through it first for files you still need.",
+   "title": "Delete temporary files",
+   "do": "Open Settings > System > Storage > Temporary files. Tick Temporary files, Recycle Bin and Thumbnails, and choose Remove files. Leave Downloads unticked unless you have checked it.",
+   "why": "Temporary files and the Recycle Bin can take many gigabytes and are safe to remove.",
+   "expect": "Windows shows how much space was freed.",
+   "fixed": "s_done_sense",
+   "not_fixed": "s_big"
+  },
+  "s_done_sense": {
+   "type": "resolved",
+   "cause": "Temporary files and the Recycle Bin filling the drive.",
+   "learn": "Windows keeps temporary and cached files to work faster, but they can pile up. Removing them is safe."
+  },
+  "s_big": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Copy photos and videos to the other place and check they open there before you delete anything.",
+   "title": "Find what uses the most space",
+   "do": "Open Settings > System > Storage and look at the categories. Uninstall apps you no longer use under Apps. Move large photos and videos to an external drive or cloud storage, and then delete them from this computer.",
+   "why": "Large unused apps and media files are the usual reason a drive is full.",
+   "expect": "The free space bar grows after you remove or move files.",
+   "fixed": "s_done_big",
+   "not_fixed": "s_pro_space"
+  },
+  "s_done_big": {
+   "type": "resolved",
+   "cause": "Large unused apps or media files.",
+   "learn": "Most of a drive is usually taken by a few big things, such as videos, games and old apps. Moving them frees space quickly."
+  },
+  "s_ro": {
+   "type": "step",
+   "title": "Check the file or drive is not locked",
+   "do": "If the file is on an SD card or flash drive, check for a small lock switch on the side and slide it to unlocked. Then right-click the file or folder, open Properties, and untick 'Read-only' if it is ticked.",
+   "why": "A read-only setting or a lock switch stops you from saving or changing files.",
+   "expect": "You can open, change or save the file.",
+   "fixed": "s_done_ro",
+   "not_fixed": "s_chk"
+  },
+  "s_done_ro": {
+   "type": "resolved",
+   "cause": "The file or drive was set to read-only.",
+   "learn": "A read-only flag or lock switch protects files from changes. It can be set by accident or by another program."
+  },
+  "s_chk": {
+   "type": "step",
+   "title": "Check the drive for errors",
+   "do": "Open File Explorer > This PC. Right-click the drive, choose Properties > Tools > Check, and let Windows scan it. Restart the computer if it asks.",
+   "why": "File system errors can make files unreadable or slow, and Windows can repair many of them.",
+   "expect": "Windows reports whether it found or fixed errors.",
+   "fixed": "s_done_chk",
+   "not_fixed": "s_pro_files"
+  },
+  "s_done_chk": {
+   "type": "resolved",
+   "cause": "Drive file system errors.",
+   "learn": "A drive's file system keeps track of where files are stored. If that record gets damaged, files can be slow or hard to open."
+  },
+  "s_health": {
+   "type": "question",
+   "text": "Copy your important files to another drive or cloud storage first. Then open Windows PowerShell and run Get-PhysicalDisk | Select FriendlyName, HealthStatus. What does HealthStatus say?",
+   "why": "A slow or clicking drive may be failing, so protecting your files comes before any fix.",
+   "options": [
+    {
+     "label": "Healthy",
+     "next": "s_chk"
+    },
+    {
+     "label": "Warning or Unhealthy",
+     "next": "s_pro_failing"
+    },
+    {
+     "label": "I couldn't run it",
+     "next": "s_pro_failing"
+    }
+   ]
+  },
+  "s_pro_space": {
+   "type": "escalate",
+   "hardware": false,
+   "reason": "Cleaning did not free enough space, so the drive may simply be too small for the way you use it. A technician can help you add or replace storage.",
+   "causes": [
+    "Drive too small for the data stored",
+    "Large hidden files such as old backups"
+   ]
+  },
+  "s_pro_files": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe checks did not fix the file access problem. The drive may have a deeper fault or permission problem. Back up what you can before anyone works on it.",
+   "causes": [
+    "Drive or file system fault",
+    "Permission problem",
+    "Failing drive"
+   ]
+  },
+  "s_pro_failing": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "Your drive may be failing. Copy your important files off it as soon as you can, use it as little as possible, and see a technician. Do not open the drive yourself.",
+   "causes": [
+    "Failing drive",
+    "Bad sectors on the drive",
+    "Loose or faulty connection"
+   ]
+  }
+ }
+}

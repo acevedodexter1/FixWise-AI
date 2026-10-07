@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Troubleshooting report · FixWise AI{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/troubleshoot.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="wrap report">
+  <p class="no-print"><a href="{{ back_url }}">&larr; {{ back_label }}</a></p>
+
+  <article class="sheet">
+    <header class="sheet-head">
+      <span class="sheet-brand">FixWise AI</span>
+      <h1>Troubleshooting Report</h1>
+    </header>
+
+    <dl class="meta">
+      <dt>Reference</dt><dd>{{ report.reference }}</dd>
+      <dt>Generated</dt><dd>{{ report.generated }}</dd>
+      {% if report.started %}<dt>Session started</dt><dd>{{ report.started }}</dd>{% endif %}
+      <dt>Category</dt><dd>{{ report.category }}</dd>
+      <dt>Status</dt><dd><span class="badge badge-{{ report.status|lower }}">{{ report.status_label }}</span></dd>
+      {% if report.device %}
+        <dt>Device</dt><dd>{{ report.device.summary }}</dd>
+        {% if report.device.notes %}<dt>Device notes</dt><dd class="problem">{{ report.device.notes }}</dd>{% endif %}
+      {% endif %}
+    </dl>
+
+    <h2>Problem described by the user</h2>
+    <p class="problem">{{ report.problem }}</p>
+
+    <h2>Outcome</h2>
+    <div class="outcome outcome-{{ report.outcome.kind }}">
+      <h3>{{ report.outcome.heading }}</h3>
+      <p>{{ report.outcome.text }}</p>
+      {% if report.outcome.learn %}<p><strong>Background:</strong> {{ report.outcome.learn }}</p>{% endif %}
+      {% if report.outcome.causes %}
+        <p class="label">Possible causes (not confirmed)</p>
+        <ul>{% for c in report.outcome.causes %}<li>{{ c }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% if report.outcome.hardware %}
+        <p class="note">For safety, FixWise AI does not provide motherboard-level or electrical repair instructions.</p>
+      {% endif %}
+    </div>
+
+    {% if report.analysis %}
+      <h2>What FixWise AI understood{% if report.analysis.ai %} <small>(AI-generated, not verified)</small>{% endif %}</h2>
+      {% if report.analysis.summary %}<p>{{ report.analysis.summary }}</p>{% endif %}
+      {% if report.analysis.symptoms %}
+        <h3>Symptoms</h3>
+        <ul>{% for s in report.analysis.symptoms %}<li>{{ s }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% if report.analysis.possible_causes %}
+        <h3>Possible causes (not confirmed)</h3>
+        <ul>{% for c in report.analysis.possible_causes %}<li>{{ c }}</li>{% endfor %}</ul>
+      {% endif %}
+    {% endif %}
+
+    <h2>Questions and steps</h2>
+    {% if report.steps %}
+      <div class="table-wrap"><table class="steps-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Question or step</th><th scope="col">Answer or result</th></tr></thead>
+        <tbody>
+          {% for s in report.steps %}
+            <tr><td>{{ s.number }}</td><td>{{ s.text }}</td><td>{{ s.answer }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}
+      <p>None. The request was referred before any step was tried.</p>
+    {% endif %}
+
+    <p class="note disclaimer">Note: {{ report.disclaimer }}</p>
+  </article>
+
+  <div class="actions no-print">
+    <a class="btn btn-primary" href="{{ pdf_url }}">Download PDF</a>
+    <button type="button" class="btn btn-ghost" onclick="window.print()">Print</button>
+    <button type="button" class="btn btn-ghost" id="copy-text">Copy as text</button>
+    <span class="note" id="copy-status" role="status"></span>
+  </div>
+
+  <details class="plain no-print">
+    <summary>Plain-text version</summary>
+    <pre id="summary">{{ text }}</pre>
+  </details>
+</section>
+
+<script>
+  document.getElementById('copy-text').addEventListener('click', function () {
+    var status = document.getElementById('copy-status');
+    var text = document.getElementById('summary').textContent;
+    if (!navigator.clipboard) { status.textContent = 'Copy is not available here. Open the plain-text version and select it.'; return; }
+    navigator.clipboard.writeText(text).then(
+      function () { status.textContent = 'Copied.'; },
+      function () { status.textContent = 'Could not copy. Open the plain-text version and select it.'; }
+    );
+  });
+</script>
+{% endblock %}

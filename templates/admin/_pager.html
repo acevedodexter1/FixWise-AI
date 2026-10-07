@@ -1,0 +1,8 @@
+{# Previous / next links that keep the current filters. Needs: pagination #}
+{% if pagination.pages > 1 %}
+<nav class="pager" aria-label="Pages">
+  {% if pagination.has_prev %}<a class="btn btn-ghost btn-sm" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=pagination.prev_num)) }}">Previous</a>{% endif %}
+  <span class="note">Page {{ pagination.page }} of {{ pagination.pages }} ({{ pagination.total }} in total)</span>
+  {% if pagination.has_next %}<a class="btn btn-ghost btn-sm" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=pagination.next_num)) }}">Next</a>{% endif %}
+</nav>
+{% endif %}

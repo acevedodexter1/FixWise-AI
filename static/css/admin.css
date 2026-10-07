@@ -1,0 +1,73 @@
+.wrap.admin { max-width: 1160px; padding: 2.4rem 0 5rem; }
+.admin h1 { font-size: clamp(2rem, 4vw, 3rem); }
+.admin h2 { margin-top: 2rem; }
+.admin code { font-size: .82em; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 6px; padding: .08rem .35rem; overflow-wrap: anywhere; }
+.admin-header { margin-bottom: 1.15rem; }
+.admin-header .lead { margin: .35rem 0 0; max-width: 720px; }
+.admin-nav { display: flex; flex-wrap: wrap; gap: .2rem; padding: .35rem; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); margin-bottom: 1.4rem; }
+.admin-nav a { color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 600; padding: .6rem .8rem; border-radius: 10px; }
+.admin-nav a:hover { color: var(--ink); background: var(--surface-soft); }
+.admin-nav a[aria-current="page"] { background: var(--signal-soft); color: var(--signal); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0 .75rem; }
+.stats > div { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; box-shadow: var(--shadow-sm); }
+.stats dt { color: var(--muted); font-size: .85rem; font-weight: 600; }
+.stats dd { margin: .2rem 0 .15rem; font: 700 2rem/1 var(--heading); }
+.stats .note { font-size: .8rem; }
+.admin-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-top: 1.4rem; }
+.admin-cols > section { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; }
+.bar { display: grid; grid-template-columns: minmax(120px, 11rem) 1fr 2.3rem; align-items: center; gap: .65rem; margin: .65rem 0; }
+.bar-label { font-size: .86rem; color: #39495f; }
+.bar-track { height: 9px; background: #e5e9f0; border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--signal); border-radius: inherit; }
+.bar-fill.bar-resolved { background: var(--ok); }
+.bar-fill.bar-escalated { background: #c28b16; }
+.bar-fill.bar-unresolved { background: var(--muted); }
+.bar-n { text-align: right; font-weight: 700; font-size: .86rem; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: 14px; }
+.admin-table { width: 100%; min-width: 700px; border-collapse: collapse; font-size: .9rem; background: var(--surface); }
+.admin-table th { background: #1a2638; color: #fff; text-align: left; padding: .65rem .75rem; font-weight: 600; white-space: nowrap; }
+.admin-table td { padding: .65rem .75rem; vertical-align: top; border-bottom: 1px solid var(--line); }
+.admin-table tbody tr:nth-child(even) { background: var(--surface-soft); }
+.admin-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.admin-table td.empty { text-align: center; color: var(--muted); padding: 1.5rem; }
+.admin-table .note { margin: .2rem 0 0; font-size: .82rem; }
+.chips-small { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .3rem; }
+.chips-small span { font-size: .73rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 .45rem; }
+.filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .7rem; margin: 1rem 0 1.1rem; }
+.filters .field { min-width: 12rem; flex: 0 1 14rem; }
+.filters .btn { margin-top: .1rem; }
+.pager { display: flex; align-items: center; justify-content: center; gap: .8rem; margin: 1rem 0; flex-wrap: wrap; }
+.pager .note { margin: 0; }
+.node-list { list-style: none; margin: 1.1rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .55rem; }
+.node { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 13px; padding: .75rem .9rem; }
+.node-question { border-left-color: var(--signal); }
+.node-step { border-left-color: #73829a; }
+.node-resolved { border-left-color: var(--ok); }
+.node-escalate { border-left-color: #c28b16; }
+.node:target { box-shadow: 0 0 0 4px rgba(36,87,245,.13); }
+.node-head { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+.node p { margin: .35rem 0 0; }
+.node-links { margin: .4rem 0 0; padding-left: 1.1rem; font-size: .86rem; color: var(--muted); }
+.ai-meta { max-width: 780px; margin: 1rem 0 1.5rem; }
+.ai-meta dt, .ai-meta dd { margin: 0; padding: .6rem 0; border-bottom: 1px solid var(--line); }
+.ai-meta dt { font-weight: 600; color: var(--muted); }
+
+@media (max-width: 900px) { .stats { grid-template-columns: 1fr 1fr; } .admin-cols { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .wrap.admin { padding-top: 1.6rem; } .stats { grid-template-columns: 1fr; } .bar { grid-template-columns: 7rem 1fr 2rem; } .admin-nav { overflow-x: auto; flex-wrap: nowrap; } .admin-nav a { white-space: nowrap; } .filters { flex-direction: column; align-items: stretch; } .filters .field { min-width: 0; flex-basis: auto; } }
+
+.meta { display: grid; grid-template-columns: 11rem 1fr; }
+.meta dt, .meta dd { margin: 0; padding: .55rem 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+
+/* ---- Mobile polish ---- */
+/* the Settings > AI list is a 2-column grid; stack it on small screens (troubleshoot.css does this for reports, but admin pages don't load it) */
+@media (max-width: 620px) {
+  .meta { grid-template-columns: 1fr; }
+  .meta dt { border-bottom: 0; padding-bottom: .1rem; }
+}
+/* admin tabs scroll sideways on a phone: hide the scrollbar and snap to each tab */
+.admin-nav { scrollbar-width: none; }
+.admin-nav::-webkit-scrollbar { display: none; }
+@media (max-width: 620px) {
+  .admin-nav { scroll-snap-type: x proximity; }
+  .admin-nav a { scroll-snap-align: center; min-height: 44px; display: inline-flex; align-items: center; }
+}

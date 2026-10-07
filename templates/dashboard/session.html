@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Session details · FixWise AI{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/troubleshoot.css') }}">{% endblock %}
+{% block content %}
+<section class="wrap dash">
+  <a class="back-link" href="{{ url_for('history.list_sessions') }}">← History</a>
+  <div class="page-head compact"><div><p class="eyebrow">Saved session</p><h1>Session details</h1><p class="session-meta">{{ category_label }} · {{ row.created_at.strftime('%b %d, %Y, %I:%M %p') }} · <span class="badge badge-{{ row.status|lower }}">{{ status_labels[row.status] }}</span></p>{% if device %}<p class="session-meta">Device: {{ device }}</p>{% endif %}</div></div>
+
+  <div class="conversation-card">
+    <div class="conversation-log"><div class="msg user">{{ row.problem_description }}</div>{% for item in timeline %}<div class="msg bot">{{ item.text }}</div><div class="msg user">{{ item.answer }}</div>{% endfor %}</div>
+  </div>
+
+  {% if row.status == 'RESOLVED' %}
+    <div class="card card-ok"><div class="result-title"><span class="result-icon">✓</span><div><span class="eyebrow">Resolved</span><h2>Looks like the problem was fixed</h2></div></div><dl><dt>Possible cause</dt><dd>{{ node.cause }} <span class="note">This is a likely explanation, not a confirmed finding.</span></dd><dt>What you learned</dt><dd>{{ node.learn }}</dd></dl></div>
+  {% elif row.status == 'ESCALATED' %}
+    <div class="card card-warn"><div class="result-title"><span class="result-icon">!</span><div><span class="eyebrow">Safety referral</span><h2>Professional assistance recommended</h2></div></div><p>{{ node.reason }}</p>{% if node.hardware %}<p class="note">For safety, FixWise AI does not provide motherboard-level or electrical repair instructions.</p>{% endif %}<dl><dt>Possible causes</dt><dd><ul>{% for c in node.causes %}<li>{{ c }}</li>{% endfor %}</ul></dd></dl><div class="actions no-print"><a class="btn btn-primary" href="{{ url_for('reports.session_report', session_id=row.id) }}">View report</a><a class="btn btn-ghost" href="{{ url_for('reports.session_pdf', session_id=row.id) }}">Download PDF</a></div></div>
+  {% elif row.status == 'ACTIVE' %}
+    <div class="card"><span class="eyebrow">In progress</span><h2>This session is not finished</h2><p class="lead">Continue from the last step instead of starting over.</p><div class="actions"><a class="btn btn-primary" href="{{ url_for('history.resume', session_id=row.id) }}">Continue troubleshooting</a></div></div>
+  {% else %}
+    <div class="card"><h2>Not finished</h2><p>You started over before this session reached a result.</p></div>
+  {% endif %}
+
+  <div class="actions no-print"><a class="btn btn-ghost" href="{{ url_for('reports.session_report', session_id=row.id) }}">View report</a><a class="btn btn-ghost" href="{{ url_for('reports.session_pdf', session_id=row.id) }}">Download PDF</a></div>
+</section>
+{% endblock %}

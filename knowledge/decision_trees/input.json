@@ -1,0 +1,178 @@
+{
+ "category": "input",
+ "label": "Keyboard and mouse",
+ "prefix": "k_",
+ "order": 7,
+ "pick_label": "The keyboard, mouse or touchpad is not responding",
+ "keywords": [
+  "keyboard",
+  "mouse",
+  "touchpad",
+  "trackpad",
+  "cursor",
+  "typing",
+  "keys"
+ ],
+ "start": "k_start",
+ "nodes": {
+  "k_start": {
+   "type": "question",
+   "text": "Which device is not responding?",
+   "why": "External and built-in devices have different safe checks.",
+   "options": [
+    {
+     "label": "An external keyboard or mouse",
+     "next": "k_ext"
+    },
+    {
+     "label": "The laptop's built-in keyboard",
+     "next": "k_kb_restart"
+    },
+    {
+     "label": "The laptop's touchpad",
+     "next": "k_tp_on"
+    }
+   ]
+  },
+  "k_ext": {
+   "type": "step",
+   "title": "Check the connection and batteries",
+   "do": "For a wired device, unplug it and plug it into a different USB port. For a wireless device, put in fresh batteries, turn it off and on, and plug its USB receiver straight into the computer (not a hub).",
+   "why": "A loose connection, flat battery or a receiver in a bad port is the most common reason.",
+   "expect": "The mouse pointer moves or the keyboard types within a few seconds.",
+   "fixed": "k_done_ext",
+   "not_fixed": "k_ext_test"
+  },
+  "k_done_ext": {
+   "type": "resolved",
+   "cause": "A loose connection, flat battery or unplugged receiver.",
+   "learn": "Wireless keyboards and mice talk to a small USB receiver. If the battery is weak or the receiver is badly placed, the signal drops."
+  },
+  "k_ext_test": {
+   "type": "question",
+   "text": "Plug the keyboard or mouse into another computer. Does it work there?",
+   "why": "If it fails on another computer too, the device is the likely problem, not your computer.",
+   "options": [
+    {
+     "label": "Yes, it works on the other computer",
+     "next": "k_restart"
+    },
+    {
+     "label": "No, it fails there too",
+     "next": "k_pro_device"
+    },
+    {
+     "label": "I can't test it",
+     "next": "k_restart"
+    }
+   ]
+  },
+  "k_restart": {
+   "type": "step",
+   "title": "Restart the computer",
+   "do": "Use Start > Power > Restart. If the keyboard is not working, use the mouse or touchscreen.",
+   "why": "A restart reloads the input drivers and clears temporary faults.",
+   "expect": "The computer restarts and the device may work again.",
+   "fixed": "k_done_restart",
+   "not_fixed": "k_driver"
+  },
+  "k_done_restart": {
+   "type": "resolved",
+   "cause": "A temporary driver glitch.",
+   "learn": "Input drivers run in memory. A restart reloads them from scratch."
+  },
+  "k_kb_restart": {
+   "type": "step",
+   "title": "Restart the computer",
+   "do": "Use the mouse or touchscreen: Start > Power > Restart. Do not use Shut down, because Fast Startup can keep the problem.",
+   "why": "A restart reloads the keyboard driver and clears temporary faults.",
+   "expect": "The computer restarts and the keyboard may work again.",
+   "fixed": "k_done_kb_restart",
+   "not_fixed": "k_kb_settings"
+  },
+  "k_done_kb_restart": {
+   "type": "resolved",
+   "cause": "A temporary keyboard driver glitch.",
+   "learn": "Fast Startup saves part of Windows to disk when you shut down. A real restart clears that state and reloads the drivers."
+  },
+  "k_kb_settings": {
+   "type": "step",
+   "title": "Check Filter Keys and Sticky Keys",
+   "do": "Open Settings > Accessibility > Keyboard. Turn off Sticky keys, Filter keys and Toggle keys, then test the keyboard.",
+   "why": "These accessibility features can make keys seem slow or not respond, and they are sometimes turned on by accident by holding Shift.",
+   "expect": "Keys respond normally when you press them.",
+   "fixed": "k_done_kb_settings",
+   "not_fixed": "k_kb_clean"
+  },
+  "k_done_kb_settings": {
+   "type": "resolved",
+   "cause": "Filter Keys or Sticky Keys was turned on.",
+   "learn": "Filter Keys tells Windows to ignore short or repeated key presses. Turned on by accident, it makes a healthy keyboard seem broken."
+  },
+  "k_kb_clean": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Make sure the laptop is off and unplugged first. Use no liquids and do not pull off any keys.",
+   "title": "Check for stuck keys and crumbs",
+   "do": "Turn the laptop off and unplug it. Look for keys that are stuck or covered with dirt. Press and release each key. Tilt the laptop and use short bursts of compressed air across the keyboard. Do not use liquids and do not remove keys or open the laptop.",
+   "why": "Crumbs and dust can hold a key down or block it from registering.",
+   "expect": "Stuck keys move freely again.",
+   "fixed": "k_done_kb_clean",
+   "not_fixed": "k_driver"
+  },
+  "k_done_kb_clean": {
+   "type": "resolved",
+   "cause": "A stuck key or dirt under the keys.",
+   "learn": "Each key presses on a contact below. Dirt can stop it from moving or touching that contact."
+  },
+  "k_tp_on": {
+   "type": "step",
+   "title": "Check that the touchpad is turned on",
+   "do": "Unplug any external mouse and test again. Look for a touchpad key on the top row (often Fn plus a key with a touchpad icon) and press it. Then open Settings > Bluetooth & devices > Touchpad and make sure the touchpad is On.",
+   "why": "Touchpads can be switched off by a key or setting, and some laptops switch them off automatically when a mouse is plugged in.",
+   "expect": "The pointer moves when you slide a finger on the touchpad.",
+   "fixed": "k_done_tp_on",
+   "not_fixed": "k_driver"
+  },
+  "k_done_tp_on": {
+   "type": "resolved",
+   "cause": "The touchpad was turned off.",
+   "learn": "A laptop touchpad is usually switched off with a function key or a setting. Some laptops also disable it when a mouse is connected."
+  },
+  "k_driver": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only uninstall the device named in this step and leave 'Delete the driver' unticked. Windows installs it again when you restart.",
+   "title": "Reinstall the input device driver",
+   "do": "Right-click Start and open Device Manager. Expand 'Keyboards' or 'Mice and other pointing devices'. Right-click the device and choose 'Uninstall device' (leave 'delete the driver' unticked), then restart the computer.",
+   "why": "Windows installs a fresh copy of the driver on startup, which replaces a damaged one.",
+   "expect": "Windows detects the device again after the restart.",
+   "fixed": "k_done_driver",
+   "not_fixed": "k_pro_internal"
+  },
+  "k_done_driver": {
+   "type": "resolved",
+   "cause": "A corrupted keyboard, mouse or touchpad driver.",
+   "learn": "A driver is the software that lets Windows talk to a device. Reinstalling it is a safe way to replace a damaged one."
+  },
+  "k_pro_device": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The keyboard or mouse fails on another computer too, so the device itself is probably faulty. These are usually inexpensive to replace, so try another one before spending money on repairs.",
+   "causes": [
+    "Faulty keyboard or mouse",
+    "Damaged cable or dead receiver"
+   ]
+  },
+  "k_pro_internal": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe checks are used up. For a built-in keyboard or touchpad, the cause may be an internal connection or a damaged part, and opening the laptop is for a technician.",
+   "causes": [
+    "Internal keyboard or touchpad connection problem",
+    "Damaged keyboard or touchpad",
+    "Driver or firmware problem"
+   ]
+  }
+ }
+}

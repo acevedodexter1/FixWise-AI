@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, StringField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, Length, Regexp
+from wtforms import EmailField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms.validators import DataRequired, EqualTo, Length, Optional, Regexp
+
+from services.device_service import DEVICE_TYPES, OPERATING_SYSTEMS
 
 EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
@@ -30,3 +32,16 @@ class LoginForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Log in")
+
+
+class DeviceForm(FlaskForm):
+    name = StringField("Device name", validators=[DataRequired(), Length(max=80)])
+    device_type = SelectField("Type", choices=[(t, t) for t in DEVICE_TYPES])
+    brand = StringField("Brand", validators=[Optional(), Length(max=60)])
+    model = StringField("Model", validators=[Optional(), Length(max=80)])
+    os = SelectField("Operating system", choices=[(o, o) for o in OPERATING_SYSTEMS])
+    notes = TextAreaField(
+        "Notes for a technician",
+        validators=[Optional(), Length(max=300)],
+    )
+    submit = SubmitField("Save device")

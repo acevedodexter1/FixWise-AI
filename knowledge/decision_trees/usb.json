@@ -1,0 +1,162 @@
+{
+ "category": "usb",
+ "label": "USB devices",
+ "prefix": "u_",
+ "order": 5,
+ "pick_label": "A USB device or external drive is not recognized",
+ "keywords": [
+  "usb",
+  "flash drive",
+  "flash disk",
+  "pen drive",
+  "thumb drive",
+  "external drive",
+  "external hard"
+ ],
+ "start": "u_start",
+ "nodes": {
+  "u_start": {
+   "type": "question",
+   "text": "Is the device that isn't working a storage drive (flash drive or external hard drive), or something else?",
+   "why": "Storage drives have extra checks, such as Windows seeing the drive but not giving it a drive letter.",
+   "options": [
+    {
+     "label": "Flash drive or external hard drive",
+     "next": "u_port"
+    },
+    {
+     "label": "Something else (webcam, phone, adapter...)",
+     "next": "u_port_o"
+    }
+   ]
+  },
+  "u_port": {
+   "type": "step",
+   "title": "Try a different USB port and cable",
+   "do": "Unplug the drive and plug it straight into a different USB port on the computer. Avoid USB hubs and front-panel extension cables. If the drive has its own cable, try another one.",
+   "why": "Single ports, hubs and cables fail on their own, and a weak connection is the most common reason a drive does not show up.",
+   "expect": "Windows plays a sound and the drive appears in File Explorer within a few seconds.",
+   "fixed": "u_done_port",
+   "not_fixed": "u_disk"
+  },
+  "u_done_port": {
+   "type": "resolved",
+   "cause": "A faulty USB port, hub or cable.",
+   "learn": "A USB port supplies both data and power. If either connection is poor, the device may not be detected at all, even though it looks plugged in."
+  },
+  "u_port_o": {
+   "type": "step",
+   "title": "Try a different USB port and cable",
+   "do": "Unplug the device and plug it straight into a different USB port on the computer. Avoid USB hubs and extension cables. If the device has its own cable, try another one.",
+   "why": "Single ports, hubs and cables fail on their own, so changing one at a time shows which part is the problem.",
+   "expect": "Windows plays a sound and the device is set up within a few seconds.",
+   "fixed": "u_done_port_o",
+   "not_fixed": "u_test"
+  },
+  "u_done_port_o": {
+   "type": "resolved",
+   "cause": "A faulty USB port, hub or cable.",
+   "learn": "A USB port supplies both data and power. If either connection is poor, the device may not be detected at all, even though it looks plugged in."
+  },
+  "u_test": {
+   "type": "question",
+   "text": "Plug the same device into another computer. Does it work there?",
+   "why": "If it fails on another computer too, the device or its cable is the likely problem and not this computer.",
+   "options": [
+    {
+     "label": "Yes, it works on the other computer",
+     "next": "u_restart"
+    },
+    {
+     "label": "No, it fails there too",
+     "next": "u_pro_device"
+    },
+    {
+     "label": "I can't test it",
+     "next": "u_restart"
+    }
+   ]
+  },
+  "u_disk": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Do not format the drive or delete a partition here. That erases everything on it.",
+   "title": "Check whether Windows can see the drive",
+   "do": "Right-click the Start button and open Disk Management. Look in the lower list for your drive. If it appears with no drive letter, right-click its partition, choose 'Change Drive Letter and Paths', and click Add. Do NOT choose Format or Initialize, because that erases the data on the drive.",
+   "why": "Windows can detect a drive but not show it in File Explorer until it has a drive letter.",
+   "expect": "The drive appears in File Explorer after you give it a letter.",
+   "fixed": "u_done_disk",
+   "not_fixed": "u_restart"
+  },
+  "u_done_disk": {
+   "type": "resolved",
+   "cause": "The drive had no drive letter assigned.",
+   "learn": "File Explorer only lists drives that have a letter such as D: or E:. If the letter is missing, the drive exists but looks invisible."
+  },
+  "u_restart": {
+   "type": "step",
+   "title": "Restart the computer with the device unplugged",
+   "do": "Unplug the device. Use Start > Power > Restart. When Windows is back, plug the device in again.",
+   "why": "A restart reloads the USB controller and its drivers and clears temporary faults.",
+   "expect": "The computer restarts, and the device is detected when you plug it in again.",
+   "fixed": "u_done_restart",
+   "not_fixed": "u_devmgr"
+  },
+  "u_done_restart": {
+   "type": "resolved",
+   "cause": "A temporary USB controller or driver glitch.",
+   "learn": "The USB controller is managed by drivers loaded in memory. A restart reloads them, which clears one-off faults."
+  },
+  "u_devmgr": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only uninstall the device named in this step and leave 'Delete the driver' unticked. Windows installs it again when you restart.",
+   "title": "Reinstall the USB driver",
+   "do": "Right-click Start and open Device Manager. Expand 'Universal Serial Bus controllers' (and 'Disk drives' for a drive). Right-click the device or any item with a yellow warning icon and choose 'Uninstall device' (leave 'delete the driver' unticked). Unplug the device, restart, and plug it in again.",
+   "why": "Windows installs a fresh copy of the driver at startup, which replaces a corrupted one.",
+   "expect": "Windows finds the device again and sets it up after the restart.",
+   "technical": "Removing the device entry forces Plug and Play to re-enumerate the device and reinstall its driver stack.",
+   "fixed": "u_done_devmgr",
+   "not_fixed": "u_power"
+  },
+  "u_done_devmgr": {
+   "type": "resolved",
+   "cause": "A corrupted USB driver.",
+   "learn": "A driver is the software that lets Windows talk to a device. If it is damaged, working hardware can look dead until the driver is reinstalled."
+  },
+  "u_power": {
+   "type": "step",
+   "title": "Turn off USB power saving",
+   "do": "In Device Manager, expand 'Universal Serial Bus controllers'. Double-click each 'USB Root Hub', open the Power Management tab, and untick 'Allow the computer to turn off this device to save power'. Restart and test again.",
+   "why": "Windows can switch USB ports off to save power, and some devices then disconnect or do not wake up.",
+   "expect": "The device stays connected and no longer drops out.",
+   "fixed": "u_done_power",
+   "not_fixed": "u_pro_usb"
+  },
+  "u_done_power": {
+   "type": "resolved",
+   "cause": "Windows power saving switched the USB port off.",
+   "learn": "USB selective suspend lets Windows cut power to idle ports. Some devices do not wake up properly afterwards."
+  },
+  "u_pro_device": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The device fails on another computer too, so the device or its cable is probably the problem and not your computer. If it is a drive with files you need, avoid plugging it in repeatedly and ask a technician about data recovery.",
+   "causes": [
+    "Faulty device",
+    "Damaged cable",
+    "Failing drive (for storage devices)"
+   ]
+  },
+  "u_pro_usb": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe software checks are used up. The computer's USB ports or controller may need inspection. If the device is a drive with important files, avoid plugging it in repeatedly and ask a technician about data recovery.",
+   "causes": [
+    "Damaged USB port",
+    "USB controller problem",
+    "Device or drive fault"
+   ]
+  }
+ }
+}

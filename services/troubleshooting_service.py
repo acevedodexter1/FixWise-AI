@@ -1,11 +1,13 @@
 """Saving troubleshooting sessions to the database (registered users only)."""
+import json
 from datetime import datetime
 
 from flask import current_app
 
 from extensions import db
-from models import TroubleshootingAnswer, TroubleshootingSession, TroubleshootingStep
+from models import AIAnalysis, TroubleshootingAnswer, TroubleshootingSession, TroubleshootingStep
 from services import decision_tree_service as tree
+from services import safety_service
 
 
 def create_session(user_id, problem, category, node):
@@ -78,4 +80,59 @@ def to_ts(row):
         "node": row.current_node,
         "history": [{"text": i["text"], "answer": i["answer"]} for i in row.timeline()],
         "db_id": row.id,
+        "analysis": load_analysis(row.id),
     }
+
+
+def load_analysis(db_id):
+    """The saved understanding of the problem, shaped like the one kept in the browser session."""
+    row = (
+        AIAnalysis.query.filter_by(session_id=db_id)
+        .order_by(AIAnalysis.created_at.desc(), AIAnalysis.id.desc())
+        .first()
+    )
+    if row is None:
+        return None
+    try:
+        symptoms = json.loads(row.symptoms or "[]")
+        causes = json.loads(row.possible_causes or "[]")
+    except ValueError:
+        symptoms, causes = [], []
+    return {
+        "summary": row.summary or "",
+        "symptoms": symptoms,
+        "possible_causes": causes,
+        "warning": safety_service.WARNING,
+        "source": row.source,
+    }
+
+
+def save_analysis(db_id, analysis):
+    try:
+        db.session.add(AIAnalysis(
+            session_id=db_id,
+            category=analysis["category"],
+            summary=analysis["summary"],
+            symptoms=json.dumps(analysis["symptoms"]),
+            possible_causes=json.dumps(analysis["possible_causes"]),
+            source=analysis["source"],
+            ai_response=analysis.get("raw", ""),
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Could not save the AI analysis")
+
+
+def mark_escalated(db_id, node_id):
+    """The request was referred to a professional before any step was tried."""
+    try:
+        row = db.session.get(TroubleshootingSession, db_id)
+        if row is not None and row.status == "ACTIVE":
+            row.status, row.final_result, row.completed_at = (
+                "ESCALATED", tree.get_node(node_id)["reason"], datetime.now(),
+            )
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Could not mark the session as escalated")

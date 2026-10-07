@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}History · FixWise AI{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">{% endblock %}
+{% block content %}
+<section class="wrap dash">
+  <div class="page-head"><div><p class="eyebrow">Saved sessions</p><h1>My troubleshooting history</h1><p class="lead">Pick up unfinished sessions or review what FixWise suggested before.</p></div><a class="btn btn-primary" href="{{ url_for('home.home') }}">New troubleshooting</a></div>
+  {% if rows %}
+  <div class="session-list">
+    {% for r in rows %}
+    <article class="session-item">
+      <div class="session-main"><span class="session-category">{{ category_labels.get(r.category, r.category) }}</span><a class="session-problem" href="{{ url_for('history.detail', session_id=r.id) }}">{{ r.problem_description|truncate(100) }}</a><span class="session-meta">{{ r.created_at.strftime('%b %d, %Y, %I:%M %p') }}</span></div>
+      <div class="session-side"><span class="badge badge-{{ r.status|lower }}">{{ status_labels[r.status] }}</span>{% if r.status == 'ACTIVE' %}<a class="btn btn-ghost btn-sm" href="{{ url_for('history.resume', session_id=r.id) }}">Continue</a>{% else %}<a class="btn btn-ghost btn-sm" href="{{ url_for('history.detail', session_id=r.id) }}">View</a>{% endif %}</div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon" aria-hidden="true">—</div><h2>No saved sessions yet</h2><p class="lead">Start troubleshooting while signed in and your session will appear here.</p><a class="btn btn-primary" href="{{ url_for('home.home') }}">Start troubleshooting</a></div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Error cases · Admin · FixWise AI{% endblock %}
+{% block admin %}
+<h1>Error cases</h1>
+<p class="lead">Known error messages the screenshot analyzer recognises. They live in <code>knowledge/error_cases/</code>. {{ cases|length }} cases loaded.</p>
+
+<div class="table-wrap">
+<table class="admin-table">
+  <thead><tr><th scope="col">Error</th><th scope="col">Area</th><th scope="col">Matches on</th></tr></thead>
+  <tbody>
+  {% for c in cases %}
+    <tr>
+      <td><strong>{{ c.title }}</strong>{% if c.generic %} <span class="badge badge-unresolved" title="Vague message. The AI's or keywords' area is trusted first.">Generic</span>{% endif %}
+        <div class="note">{{ c.meaning }}</div></td>
+      <td>{{ c.category_label }}</td>
+      <td>{% for p in c.patterns %}<code>{{ p }}</code>{% if not loop.last %} {% endif %}{% endfor %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

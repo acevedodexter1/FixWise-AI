@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">{% endblock %}
+{% block content %}
+<section class="wrap admin">
+  <div class="admin-header"><div class="eyebrow">System management</div><p class="lead">Monitor usage, troubleshooting sessions, knowledge content, and AI status.</p></div>
+  <nav class="admin-nav" aria-label="Admin sections">
+    <a href="{{ url_for('admin.dashboard') }}"{% if request.endpoint == 'admin.dashboard' %} aria-current="page"{% endif %}>Overview</a>
+    <a href="{{ url_for('admin.users') }}"{% if request.endpoint == 'admin.users' %} aria-current="page"{% endif %}>Users</a>
+    <a href="{{ url_for('admin.sessions') }}"{% if request.endpoint == 'admin.sessions' %} aria-current="page"{% endif %}>Sessions</a>
+    <a href="{{ url_for('admin.knowledge') }}"{% if request.endpoint in ('admin.knowledge', 'admin.decision_tree') %} aria-current="page"{% endif %}>Knowledge base</a>
+    <a href="{{ url_for('admin.error_cases') }}"{% if request.endpoint == 'admin.error_cases' %} aria-current="page"{% endif %}>Error cases</a>
+    <a href="{{ url_for('admin.ai_settings') }}"{% if request.endpoint == 'admin.ai_settings' %} aria-current="page"{% endif %}>AI</a>
+  </nav>
+  {% block admin %}{% endblock %}
+</section>
+{% endblock %}

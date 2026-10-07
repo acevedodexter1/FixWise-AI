@@ -1,0 +1,160 @@
+{
+ "category": "performance",
+ "label": "Performance",
+ "prefix": "p_",
+ "order": 4,
+ "pick_label": "The computer is slow or keeps freezing",
+ "keywords": [
+  "slow",
+  "lag",
+  "freez",
+  "sluggish",
+  "hang",
+  "high cpu",
+  "high ram",
+  "high disk",
+  "takes forever"
+ ],
+ "start": "p_start",
+ "nodes": {
+  "p_start": {
+   "type": "question",
+   "text": "Is the computer slowest right after Windows starts?",
+   "why": "Slowness only at startup points to startup apps; slowness all day points to something running continuously.",
+   "options": [
+    {
+     "label": "Yes",
+     "next": "p_startup"
+    },
+    {
+     "label": "No",
+     "next": "p_taskmgr"
+    }
+   ]
+  },
+  "p_startup": {
+   "type": "step",
+   "title": "Turn off unneeded startup apps",
+   "do": "Press Ctrl+Shift+Esc and open Startup apps. Right-click apps you do not need at login and choose Disable, then restart. Leave security software and drivers alone.",
+   "why": "Each startup app competes for CPU, memory and disk while Windows is still loading.",
+   "expect": "Disabled apps will not open at login; you can still open them yourself.",
+   "fixed": "p_done_startup",
+   "not_fixed": "p_taskmgr"
+  },
+  "p_done_startup": {
+   "type": "resolved",
+   "cause": "Too many startup applications.",
+   "learn": "Startup apps load every time you sign in. Each one uses CPU, RAM and disk, so a long list slows the first minutes of every session."
+  },
+  "p_taskmgr": {
+   "type": "step",
+   "title": "Find what is using your resources",
+   "do": "Press Ctrl+Shift+Esc and open Processes. Click the CPU, Memory and Disk headings to sort. If one ordinary app uses most of a resource, save your work and close it.",
+   "why": "This shows which resource is the bottleneck.",
+   "expect": "The busiest apps appear at the top of the list.",
+   "fixed": "p_done_taskmgr",
+   "not_fixed": "p_disk"
+  },
+  "p_done_taskmgr": {
+   "type": "resolved",
+   "cause": "One app or background process using most of the CPU, memory or disk.",
+   "learn": "Task Manager shows CPU, RAM and disk use per process. A single runaway process can slow the whole system."
+  },
+  "p_disk": {
+   "type": "question",
+   "text": "Open File Explorer > This PC. Does the C: drive have less than 10% free space?",
+   "why": "Windows needs free space for temporary files and virtual memory.",
+   "options": [
+    {
+     "label": "Yes",
+     "next": "p_space"
+    },
+    {
+     "label": "No",
+     "next": "p_hot"
+    }
+   ]
+  },
+  "p_space": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Removed temporary files cannot be restored. Leave Downloads unticked unless you have checked it.",
+   "title": "Free up disk space",
+   "do": "Open Settings > System > Storage. Turn on Storage Sense or open Temporary files and remove what you do not need. Leave Downloads unticked unless you have checked it.",
+   "why": "A nearly full drive slows saving, loading and virtual memory.",
+   "expect": "The amount of free space increases.",
+   "fixed": "p_done_space",
+   "not_fixed": "p_hot"
+  },
+  "p_done_space": {
+   "type": "resolved",
+   "cause": "Nearly full system drive.",
+   "learn": "When RAM runs short, Windows uses disk space as virtual memory. If the disk is nearly full, that fallback is slow or unavailable."
+  },
+  "p_hot": {
+   "type": "question",
+   "text": "Does the computer feel very hot, or is the fan loud all the time?",
+   "why": "Hot processors slow themselves down to protect themselves.",
+   "options": [
+    {
+     "label": "Yes",
+     "next": "p_vent"
+    },
+    {
+     "label": "No",
+     "next": "p_restart"
+    }
+   ]
+  },
+  "p_vent": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Let it cool down first and keep the case closed. Do not open the laptop.",
+   "title": "Improve airflow",
+   "do": "Shut down, unplug and let it cool. Use it on a hard, flat surface and make sure the air vents are not blocked. Gently clear dust from the outside vents with a soft brush. Do not open the case.",
+   "why": "Restricted airflow makes the processor slow down (thermal throttling).",
+   "expect": "It should run cooler and the fan should be quieter.",
+   "fixed": "p_done_vent",
+   "not_fixed": "p_pro_heat"
+  },
+  "p_done_vent": {
+   "type": "resolved",
+   "cause": "Restricted airflow causing thermal throttling.",
+   "learn": "Processors reduce their speed when they get too hot. Blocked vents and soft surfaces such as beds trap heat."
+  },
+  "p_restart": {
+   "type": "step",
+   "title": "Restart the computer",
+   "do": "Use Start > Power > Restart.",
+   "why": "A restart clears temporary software problems that build up over days.",
+   "expect": "The computer restarts and may feel faster.",
+   "fixed": "p_done_restart",
+   "not_fixed": "p_pro_perf"
+  },
+  "p_done_restart": {
+   "type": "resolved",
+   "cause": "Temporary software slowdown.",
+   "learn": "Memory leaks and stuck processes build up over time. A restart resets them."
+  },
+  "p_pro_heat": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "Overheating that continues after safe airflow checks may need a technician to inspect the fan and cooling system. FixWise AI does not guide internal cleaning or repair.",
+   "causes": [
+    "Fan or cooling system fault",
+    "Dust built up inside the device",
+    "Cooling parts worn out"
+   ]
+  },
+  "p_pro_perf": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe checks are used up. Lasting slowness can have deeper causes, such as a failing drive or too little RAM, that need further testing.",
+   "causes": [
+    "Failing or slow storage drive",
+    "Too little memory (RAM) for the workload",
+    "Operating system problems"
+   ]
+  }
+ }
+}

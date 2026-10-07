@@ -1,61 +1,69 @@
 {% extends "base.html" %}
+{% block title %}FixWise AI · Guided troubleshooting{% endblock %}
 {% block content %}
+<section class="start wrap">
+  <header class="start-head">
+    <h1>Something not working?</h1>
+    <p class="lead">Choose your device, tell us what is wrong, and get safe steps one at a time.</p>
+  </header>
 
-<section class="hero wrap">
-  <div class="hero-copy">
-    <h1>What's wrong with your computer?</h1>
-    <p class="lead">FixWise AI helps you understand and troubleshoot common computer problems step by step, and explains why each step works.</p>
+  <form class="ask" action="{{ url_for('troubleshoot.start') }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <form class="ask" action="{{ url_for('troubleshoot.start') }}" method="post">
-      <label for="problem" class="sr-only">Describe your computer problem</label>
-      <textarea id="problem" name="problem" rows="3" required maxlength="1000"
-        placeholder="Example: My laptop connects to Wi-Fi but websites won't open."></textarea>
-      <div class="ask-actions">
-        <button type="submit" class="btn btn-primary">Start troubleshooting</button>
-        <a class="btn btn-ghost" href="{{ url_for('home.learn') }}">Learn computer troubleshooting</a>
+    <fieldset class="ask-block">
+      <legend class="ask-label"><span class="num">1</span> What device is it?</legend>
+      <div class="device-grid">
+        <label class="device">
+          <input type="radio" name="device_kind" value="laptop">
+          <span class="device-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>
+            <strong>Laptop</strong><small>Windows 10 / 11</small>
+          </span>
+        </label>
+        <label class="device">
+          <input type="radio" name="device_kind" value="desktop">
+          <span class="device-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
+            <strong>Desktop PC</strong><small>Windows 10 / 11</small>
+          </span>
+        </label>
+        <div class="device is-soon" aria-disabled="true">
+          <span class="device-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>
+            <strong>Phone / tablet</strong><small class="soon">Coming soon</small>
+          </span>
+        </div>
+        <div class="device is-soon" aria-disabled="true">
+          <span class="device-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 17h.01M7 14l-2-6M17 14l2-6"/></svg>
+            <strong>Router / Wi-Fi</strong><small class="soon">Coming soon</small>
+          </span>
+        </div>
       </div>
-      <p class="hint">No account needed. Log in later only if you want to save your history.</p>
-    </form>
-  </div>
+    </fieldset>
 
-  <aside class="chat" aria-label="Example of a troubleshooting conversation">
-    <div class="chat-bar"><span class="dot"></span> FixWise AI · example</div>
-    <div class="msg user">My laptop suddenly has no sound.</div>
-    <div class="msg bot">Did the sound stop after you connected headphones?</div>
-    <div class="reply">
-      <span class="pill">Yes</span>
-      <span class="pill">No</span>
+    <div class="ask-block">
+      <label for="problem" class="ask-label"><span class="num">2</span> What is going wrong?</label>
+      <div class="quick" role="group" aria-label="Common problems. Tap one to fill in the box.">
+        <button type="button" data-text="My Wi-Fi is connected but websites will not open.">Wi-Fi / internet</button>
+        <button type="button" data-text="My computer is very slow and keeps freezing.">Slow or freezing</button>
+        <button type="button" data-text="There is no sound from my speakers or headphones.">No sound</button>
+        <button type="button" data-text="My screen is black or shows nothing.">Black screen</button>
+        <button type="button" data-text="My computer shows a blue screen or will not start.">Blue screen / won’t start</button>
+        <button type="button" data-text="My laptop is plugged in but not charging." data-only="laptop">Not charging</button>
+        <button type="button" data-text="My keyboard or mouse is not responding.">Keyboard / mouse</button>
+        <button type="button" data-text="My USB drive is not detected.">USB device</button>
+        <button type="button" data-text="My printer will not print.">Printer</button>
+      </div>
+      <textarea id="problem" name="problem" rows="4" required maxlength="1000" placeholder="Or describe it in your own words. English, Tagalog or Bisaya is fine."></textarea>
     </div>
-    <div class="msg bot">
-      Disconnect the headphones, then check whether the speaker icon shows an output device.
-      <div class="why"><strong>Why:</strong> Windows can keep sending audio to a device that is no longer plugged in.</div>
-    </div>
-  </aside>
-</section>
 
-<section class="steps wrap">
-  <h2>How it works</h2>
-  <ol>
-    <li><strong>Describe it.</strong> Type the problem in your own words, or upload a screenshot of the error.</li>
-    <li><strong>Answer a few questions.</strong> The next question depends on your last answer.</li>
-    <li><strong>Try one safe step at a time.</strong> Tell us what happened, or that you already tried it.</li>
-    <li><strong>Learn what happened.</strong> Get a report, plus a plain explanation of the cause.</li>
-  </ol>
-</section>
+    {% include "_device_select.html" %}
 
-<section class="scope wrap">
-  <div>
-    <h2>What it can help with</h2>
-    <ul class="chips">
-      <li>Windows</li><li>Slow computer</li><li>Wi-Fi and internet</li><li>Sound</li>
-      <li>Display</li><li>Keyboard and mouse</li><li>Bluetooth</li><li>USB devices</li>
-      <li>Printer</li><li>Camera</li><li>Storage</li><li>Battery</li><li>Overheating</li>
-    </ul>
-  </div>
-  <div class="safety">
-    <h2>When it tells you to stop</h2>
-    <p>If a problem needs opening the device, board-level checks, or electrical testing, FixWise AI will not guide you through it. It will recommend a technician and prepare a summary you can hand over.</p>
-  </div>
-</section>
+    <button type="submit" class="btn btn-primary ask-submit">Start troubleshooting <span aria-hidden="true">→</span></button>
+    <p class="ask-foot">No account needed. Have an error message? <a href="{{ url_for('ai.screenshot') }}">Check an error screenshot</a></p>
+  </form>
 
+  <p class="start-note"><strong>Safety first.</strong> FixWise does not guide dangerous electrical work or opening hardware. If something smells burnt or looks swollen, unplug it and see a technician.</p>
+</section>
 {% endblock %}

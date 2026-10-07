@@ -1,0 +1,28 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Knowledge base · Admin · FixWise AI{% endblock %}
+{% block admin %}
+<h1>Knowledge base</h1>
+<p class="lead">Each area is one file in <code>knowledge/decision_trees/</code>. The files are checked when the app starts, so if this page loads, every tree is valid. To change one, edit its JSON file and restart.</p>
+
+<div class="table-wrap">
+<table class="admin-table">
+  <thead>
+    <tr><th scope="col">Area</th><th scope="col" class="num">Questions</th><th scope="col" class="num">Steps</th><th scope="col" class="num">Fixed</th><th scope="col" class="num">Referrals</th><th scope="col" class="num">Longest path</th><th scope="col" class="num">Error cases</th></tr>
+  </thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><a href="{{ url_for('admin.decision_tree', category=r.key) }}">{{ r.label }}</a>
+        <div class="chips-small">{% for k in r.keywords %}<span>{{ k }}</span>{% endfor %}</div></td>
+      <td class="num">{{ r.counts.question }}</td>
+      <td class="num">{{ r.counts.step }}</td>
+      <td class="num">{{ r.counts.resolved }}</td>
+      <td class="num">{{ r.counts.escalate }}</td>
+      <td class="num">{{ r.longest_path }}</td>
+      <td class="num">{{ r.error_cases }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

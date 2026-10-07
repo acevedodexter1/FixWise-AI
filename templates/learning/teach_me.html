@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Teach me · FixWise AI{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/troubleshoot.css') }}">{% endblock %}
+{% block content %}
+<section class="ts wrap">
+  <div class="ts-top">
+    <div>
+      <h1>Teach me what happened</h1>
+      <span class="cat">{{ category_label }} · {{ 'Technical' if level == 'technical' else 'Beginner' }} level</span>
+    </div>
+    <a href="{{ url_for('troubleshoot.interview') }}">&larr; Back to result</a>
+  </div>
+
+  <div class="level-switch">
+    <form method="post" action="{{ url_for('troubleshoot.teach') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="pill-btn{% if level == 'beginner' %} is-on{% endif %}" name="level" value="beginner">Beginner</button>
+      <button type="submit" class="pill-btn{% if level == 'technical' %} is-on{% endif %}" name="level" value="technical">Technical</button>
+    </form>
+  </div>
+
+  {% if source == 'builtin' %}
+    <p class="note">The AI explanation is not available right now (or the limit for this visit was reached), so this is the built-in explanation.</p>
+  {% endif %}
+
+  <div class="card card-ok lesson">
+    {% if lesson.what_happened %}
+      <h2>What happened</h2>
+      <p>{{ lesson.what_happened }}</p>
+    {% endif %}
+    {% if lesson.component %}
+      <h2>What was involved</h2>
+      <p>{{ lesson.component }}</p>
+    {% endif %}
+    {% if lesson.about_the_steps %}
+      <h2>About the steps you tried</h2>
+      <p>{{ lesson.about_the_steps }}</p>
+    {% endif %}
+    {% if lesson.prevention %}
+      <h2>How to prevent it</h2>
+      <ul>{% for tip in lesson.prevention %}<li>{{ tip }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if lesson.related_concepts %}
+      <h2>Related concepts</h2>
+      <ul>{% for concept in lesson.related_concepts %}<li>{{ concept }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+
+  <p class="hint">
+    {% if source == 'saved' %}This lesson was saved with your session.{% endif %}
+    {% if source == 'ai' and ts.db_id %}This lesson is saved with your session.{% endif %}
+    This is a learning aid. It cannot confirm the exact cause.
+  </p>
+</section>
+{% endblock %}

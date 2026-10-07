@@ -1,243 +1,201 @@
-"""Hardcoded decision trees (Phase 3). Later these move into the database/knowledge base.
+"""The troubleshooting knowledge base: decision trees loaded from knowledge/decision_trees/*.json.
+
+To add a category, drop a new JSON file into that folder (copy an existing one for the shape).
+Everything is validated when the app starts, so a typo fails fast instead of breaking a
+user's session halfway through.
 
 Node types:
   question : options -> next node
   step     : do/why/expect, then "fixed" or "not_fixed" -> next node
   resolved : problem solved, shows cause + what the user learned
   escalate : safe steps exhausted -> professional assistance recommended
+
+Every step also carries a risk level (optional, "low" when left out):
+  "low"    : nothing special, shown as is.
+  "medium" : safe for a beginner but easy to get wrong (admin commands, deleting files, driver
+             changes, cleaning near a port). Needs a "caution" text, shown before the step.
+  "high"   : never a guided step. A step marked "high" risk, or "requires_professional": true,
+             is refused when the app starts. That work must be an escalate node instead, so a
+             typo can never put a dangerous instruction in front of a user.
 """
+import json
+import re
+from pathlib import Path
 
-START_NODES = {"display": "d_start", "network": "n_start", "unknown": "pick"}
-CATEGORY_LABELS = {"display": "Display", "network": "Internet and network", "unknown": "Not sure yet"}
-_PREFIX = {"d_": "display", "n_": "network"}
-
-KEYWORDS = {
-    "display": ["display", "screen", "lcd", "monitor", "black", "blank", "no signal", "hdmi"],
-    "network": ["wifi", "wi-fi", "internet", "network", "website", "online", "router", "browser"],
+TREE_DIR = Path(__file__).resolve().parent.parent / "knowledge" / "decision_trees"
+SHARED_FILE = "_shared.json"  # nodes not tied to one category, e.g. the safety referrals
+PICK_NODE = "pick"
+TERMINAL = ("resolved", "escalate")
+REQUIRED_FIELDS = {
+    "question": ("text", "why", "options"),
+    "step": ("title", "do", "why", "expect", "fixed", "not_fixed"),
+    "resolved": ("cause", "learn"),
+    "escalate": ("reason", "causes"),
 }
+RISK_LEVELS = ("low", "medium", "high")
+CATEGORY_FIELDS = ("category", "label", "prefix", "pick_label", "keywords", "start", "nodes")
 
-TREE = {
-    "pick": {
+
+class TreeError(ValueError):
+    """The knowledge base is invalid."""
+
+
+def _targets(node):
+    if node["type"] == "question":
+        return [option["next"] for option in node["options"]]
+    if node["type"] == "step":
+        return [node["fixed"], node["not_fixed"]]
+    return []
+
+
+def _validate_risk(node_id, node):
+    risk = node.get("risk", "low")
+    if risk not in RISK_LEVELS:
+        raise TreeError(f"{node_id}: risk must be one of {', '.join(RISK_LEVELS)}, not {risk!r}")
+    professional = node.get("requires_professional", False)
+    if not isinstance(professional, bool):
+        raise TreeError(f"{node_id}: 'requires_professional' must be true or false")
+    if risk == "high" or professional:
+        raise TreeError(
+            f"{node_id}: a high-risk or professional-only job cannot be a guided step. "
+            "Make it an escalate node instead."
+        )
+    if risk == "medium" and not (isinstance(node.get("caution"), str) and node["caution"].strip()):
+        raise TreeError(f"{node_id}: a medium-risk step needs a 'caution' text")
+
+
+def _validate_nodes(tree):
+    for node_id, node in tree.items():
+        kind = node.get("type")
+        if kind not in REQUIRED_FIELDS:
+            raise TreeError(f"{node_id}: unknown node type {kind!r}")
+        for field in REQUIRED_FIELDS[kind]:
+            if not node.get(field):
+                raise TreeError(f"{node_id}: missing '{field}'")
+        if kind == "step":
+            _validate_risk(node_id, node)
+        if kind == "question":
+            for option in node["options"]:
+                if not isinstance(option, dict) or not option.get("label") or not option.get("next"):
+                    raise TreeError(f"{node_id}: every option needs a 'label' and a 'next'")
+        for target in _targets(node):
+            if target not in tree:
+                raise TreeError(f"{node_id} points to a missing node '{target}'")
+
+
+def _check_reachable(tree, start, own_nodes, category):
+    seen, queue = {start}, [start]
+    while queue:
+        for target in _targets(tree[queue.pop()]):
+            if target not in seen:
+                seen.add(target)
+                queue.append(target)
+    orphans = [n for n in own_nodes if n not in seen]
+    if orphans:
+        raise TreeError(f"{category}: nodes that can never be reached: {', '.join(orphans)}")
+
+
+def _check_acyclic(tree):
+    """A loop would trap a user in the same steps forever and break the progress bar."""
+    state = {}  # 1 = on the current path, 2 = finished
+    for root in tree:
+        if root in state:
+            continue
+        state[root] = 1
+        stack = [(root, iter(_targets(tree[root])))]
+        while stack:
+            node_id, targets = stack[-1]
+            for target in targets:
+                if state.get(target) == 1:
+                    raise TreeError(f"loop detected: {node_id} -> {target}")
+                if target not in state:
+                    state[target] = 1
+                    stack.append((target, iter(_targets(tree[target]))))
+                    break
+            else:
+                state[node_id] = 2
+                stack.pop()
+
+
+def build_knowledge_base(files, shared_nodes=None):
+    """Validate category dicts and return (TREE, START_NODES, CATEGORY_LABELS, KEYWORDS, prefixes)."""
+    tree, starts, labels, keywords, prefixes = {}, {}, {}, {}, {}
+
+    def add(node_id, node, where):
+        if node_id in tree or node_id == PICK_NODE:
+            raise TreeError(f"{where}: duplicate node id '{node_id}'")
+        tree[node_id] = node
+
+    for node_id, node in (shared_nodes or {}).items():
+        add(node_id, node, "shared nodes")
+
+    own = {}
+    for data in sorted(files, key=lambda f: f.get("order", 99)):
+        missing = [k for k in CATEGORY_FIELDS if k not in data]
+        if missing:
+            raise TreeError(f"category file is missing: {', '.join(missing)}")
+        key, prefix = data["category"], data["prefix"]
+        if key in labels or key == "unknown":
+            raise TreeError(f"duplicate category '{key}'")
+        if prefix in prefixes:
+            raise TreeError(f"{key}: prefix '{prefix}' is already used")
+        if data["start"] not in data["nodes"]:
+            raise TreeError(f"{key}: start node '{data['start']}' does not exist")
+        for node_id, node in data["nodes"].items():
+            if not node_id.startswith(prefix):
+                raise TreeError(f"{key}: node '{node_id}' must start with '{prefix}'")
+            add(node_id, node, key)
+        own[key] = list(data["nodes"])
+        labels[key], starts[key] = data["label"], data["start"]
+        keywords[key], prefixes[prefix] = list(data["keywords"]), key
+
+    if not own:
+        raise TreeError("no category files found")
+
+    tree[PICK_NODE] = {
         "type": "question",
         "text": "I'm not sure yet which area this is. Which sounds closest to your problem?",
-        "why": "Each area has its own set of safe checks. More areas are coming soon.",
+        "why": "Each area has its own set of safe checks.",
         "options": [
-            {"label": "The screen is black or shows nothing", "next": "d_start"},
-            {"label": "Wi-Fi or internet is not working", "next": "n_start"},
+            {"label": d["pick_label"], "next": d["start"]}
+            for d in sorted(files, key=lambda f: f.get("order", 99))
         ],
-    },
+    }
+    labels["unknown"], starts["unknown"] = "Not sure yet", PICK_NODE
 
-    # ---------------- DISPLAY ----------------
-    "d_start": {
-        "type": "question",
-        "text": "Is the blank screen a laptop's built-in screen, or a separate monitor connected to a computer?",
-        "why": "The checks are different for each, so I need to know which one to start with.",
-        "options": [
-            {"label": "Laptop's built-in screen", "next": "d_lap_bright"},
-            {"label": "Separate monitor", "next": "d_mon_cable"},
-        ],
-    },
-    "d_lap_bright": {
-        "type": "step",
-        "title": "Check brightness and wake the laptop",
-        "do": "Press the brightness-up key on your keyboard several times. Then press any key or tap the touchpad to wake the laptop.",
-        "why": "Brightness can be at its lowest, or the laptop may be asleep with the screen off while the power light is still on.",
-        "expect": "If this was the cause, the picture comes back right away.",
-        "fixed": "d_done_settings", "not_fixed": "d_lap_ext",
-    },
-    "d_lap_ext": {
-        "type": "question",
-        "text": "Do you have an external monitor or TV and an HDMI cable you can use for a quick test?",
-        "why": "An external screen tells us whether the laptop is producing a picture at all.",
-        "options": [
-            {"label": "Yes, I can test", "next": "d_lap_ext_test"},
-            {"label": "No, I can't", "next": "d_lap_light"},
-        ],
-    },
-    "d_lap_ext_test": {
-        "type": "step",
-        "title": "Test with an external monitor",
-        "do": "Connect the monitor or TV to the laptop's HDMI port, turn it on, and select the matching input. Then press the Windows key + P and choose 'Duplicate'.",
-        "why": "If the external screen works, the laptop is producing a picture and the problem is likely its own screen.",
-        "expect": "The external screen may take a few seconds to show the desktop.",
-        "fixed_label": "The external screen shows the desktop",
-        "not_fixed_label": "The external screen is blank too",
-        "fixed": "d_pro_panel", "not_fixed": "d_power",
-    },
-    "d_lap_light": {
-        "type": "step",
-        "title": "Look for a faint picture",
-        "do": "Dim the room lights. Shine a phone flashlight at an angle on the screen and look closely for a faint Windows login or desktop.",
-        "why": "If you can faintly see the picture, the laptop is working but the screen's backlight is not lighting it.",
-        "expect": "You would only see a very dark outline if the backlight is the problem.",
-        "fixed_label": "I can faintly see something",
-        "not_fixed_label": "I see nothing",
-        "fixed": "d_pro_panel", "not_fixed": "d_power",
-    },
-    "d_power": {
-        "type": "step",
-        "title": "Do a power reset",
-        "do": "Hold the power button for 10 seconds to turn the laptop off. Unplug the charger and any USB devices. Hold the power button for 30 seconds, then plug in only the charger and turn it on.",
-        "why": "Holding the power button drains leftover electricity, which can clear a stuck power or display state.",
-        "expect": "The laptop may start more slowly than usual and the fan may spin up briefly.",
-        "fixed": "d_done_power", "not_fixed": "d_pro_general",
-    },
-    "d_mon_cable": {
-        "type": "step",
-        "title": "Check the monitor cable and input",
-        "do": "Turn the monitor on. Make sure both ends of the video cable (HDMI, DisplayPort or VGA) are firmly plugged in. Use the monitor's input button to select the matching input.",
-        "why": "A loose cable or the wrong input is the most common reason for a blank monitor.",
-        "expect": "The monitor may show 'No Signal' first, then the picture.",
-        "fixed": "d_done_cable", "not_fixed": "d_mon_signal",
-    },
-    "d_mon_signal": {
-        "type": "question",
-        "text": "Does the monitor show a 'No Signal' message?",
-        "why": "'No Signal' means the monitor works but is not receiving a picture from the computer.",
-        "options": [
-            {"label": "Yes, 'No Signal'", "next": "d_power_desk"},
-            {"label": "No, it shows nothing at all", "next": "d_mon_other"},
-        ],
-    },
-    "d_power_desk": {
-        "type": "step",
-        "title": "Do a power reset on the computer",
-        "do": "Turn the computer off, unplug its power cable, and hold the computer's power button for 30 seconds. Plug the cable back in and turn it on.",
-        "why": "This clears leftover electricity that can leave the computer stuck without sending a picture.",
-        "expect": "The computer may take a little longer to start.",
-        "fixed": "d_done_power", "not_fixed": "d_pro_general",
-    },
-    "d_mon_other": {
-        "type": "step",
-        "title": "Test the monitor on another device",
-        "do": "Connect the same monitor and cable to another computer or laptop and check whether it shows a picture.",
-        "why": "This tells us whether the problem is the monitor or the computer.",
-        "expect": "The monitor shows the other device's screen if it is working.",
-        "fixed_label": "The monitor works on another device",
-        "not_fixed_label": "The monitor is blank on the other device too",
-        "fixed": "d_pro_general", "not_fixed": "d_pro_monitor",
-    },
-    "d_done_settings": {
-        "type": "resolved",
-        "cause": "The brightness was too low, or the laptop was asleep with the screen off.",
-        "learn": "A laptop can keep its power light on while the display is off. Sleep mode and very low brightness both look like a dead screen.",
-    },
-    "d_done_power": {
-        "type": "resolved",
-        "cause": "A temporary power or display state was stuck.",
-        "learn": "A power reset drains residual charge from the hardware so it can start fresh, a bit like closing and reopening an app that froze.",
-    },
-    "d_done_cable": {
-        "type": "resolved",
-        "cause": "A loose cable or the wrong monitor input.",
-        "learn": "A monitor only shows what arrives on the input it is set to, and the cable must be firmly connected to carry the video signal.",
-    },
-    "d_pro_panel": {
-        "type": "escalate", "hardware": True,
-        "reason": "The laptop seems to produce a picture, so the problem may be the laptop's own screen, backlight or internal cable. Checking those means opening the laptop.",
-        "causes": ["Screen backlight problem", "Loose or damaged internal display cable", "Damaged screen panel"],
-    },
-    "d_pro_general": {
-        "type": "escalate", "hardware": True,
-        "reason": "The safe checks did not fix the problem. Further diagnosis needs hardware tools or opening the device.",
-        "causes": ["Graphics or display hardware problem", "Memory (RAM) problem", "Power or motherboard problem", "Operating system or firmware problem"],
-    },
-    "d_pro_monitor": {
-        "type": "escalate", "hardware": True,
-        "reason": "The monitor stays blank on another device too, so the monitor itself may need repair or replacement.",
-        "causes": ["Monitor power or panel fault", "Faulty cable (try a different cable if you have one)"],
-    },
+    _validate_nodes(tree)
+    for key, node_ids in own.items():
+        _check_reachable(tree, starts[key], node_ids, key)
+    _check_acyclic(tree)
+    return tree, starts, labels, keywords, prefixes
 
-    # ---------------- NETWORK ----------------
-    "n_start": {
-        "type": "question",
-        "text": "Does your computer say it is connected to Wi-Fi?",
-        "why": "This separates a problem connecting from a problem after connecting.",
-        "options": [
-            {"label": "Yes, it says connected", "next": "n_other_dev"},
-            {"label": "No, it is not connected", "next": "n_toggle"},
-        ],
-    },
-    "n_toggle": {
-        "type": "step",
-        "title": "Check Wi-Fi and Airplane mode",
-        "do": "Click the network icon in the taskbar. Make sure Airplane mode is off and Wi-Fi is on. Some laptops also have a Wi-Fi key (Fn plus a key with an antenna icon).",
-        "why": "Airplane mode or a switched-off Wi-Fi blocks every wireless connection.",
-        "expect": "Nearby Wi-Fi networks should appear within a few seconds.",
-        "fixed": "n_done_toggle", "not_fixed": "n_adapter",
-    },
-    "n_adapter": {
-        "type": "step",
-        "title": "Restart the Wi-Fi adapter",
-        "do": "Right-click the Start button and open Device Manager. Expand 'Network adapters', right-click your Wi-Fi adapter and choose 'Disable device'. Wait 10 seconds, then right-click it again and choose 'Enable device'. If no Wi-Fi adapter is listed at all, note that for later.",
-        "why": "Restarting the network adapter refreshes the connection and can fix temporary driver or setup problems.",
-        "expect": "Your Wi-Fi will disconnect for a moment, then reconnect.",
-        "technical": "This resets the adapter's driver state. A warning icon on the adapter, or no adapter listed, points toward a driver or adapter problem.",
-        "fixed": "n_done_adapter", "not_fixed": "n_pro_net",
-    },
-    "n_other_dev": {
-        "type": "question",
-        "text": "Can your phone or another device use the internet on the same Wi-Fi?",
-        "why": "If other devices work, the problem is likely on this computer. If they don't, it is likely the router or internet service.",
-        "options": [
-            {"label": "Yes, they work", "next": "n_dns"},
-            {"label": "No, they don't work either", "next": "n_router"},
-            {"label": "I can't check right now", "next": "n_dns"},
-        ],
-    },
-    "n_dns": {
-        "type": "step",
-        "title": "Clear your computer's saved website connection information",
-        "do": "Click Start, type cmd and press Enter to open Command Prompt. Type ipconfig /flushdns and press Enter.",
-        "why": "Your computer remembers where websites are. If a saved entry is wrong, sites will not load even though you are connected.",
-        "expect": "A message saying the DNS Resolver Cache was flushed. Try opening a website afterwards.",
-        "technical": "ipconfig /flushdns clears the local DNS resolver cache, so names are looked up again.",
-        "fixed": "n_done_dns", "not_fixed": "n_adapter",
-    },
-    "n_router": {
-        "type": "step",
-        "title": "Restart your router",
-        "do": "Unplug the router (and the modem, if it is separate) for 30 seconds, plug it back in, and wait about 2 minutes for the lights to settle.",
-        "why": "Routers can get stuck after running for a long time. Restarting makes them reconnect to your internet provider.",
-        "expect": "All devices lose internet for a few minutes.",
-        "fixed": "n_done_router", "not_fixed": "n_pro_isp",
-    },
-    "n_done_toggle": {
-        "type": "resolved",
-        "cause": "Airplane mode was on, or Wi-Fi was switched off.",
-        "learn": "Airplane mode turns off all wireless radios, including Wi-Fi and Bluetooth, to save power or follow flight rules.",
-    },
-    "n_done_adapter": {
-        "type": "resolved",
-        "cause": "A temporary network adapter or driver problem.",
-        "learn": "The network adapter is the hardware that connects you to Wi-Fi. The driver is the software that lets Windows talk to it. Restarting it reloads that link.",
-    },
-    "n_done_dns": {
-        "type": "resolved",
-        "cause": "A temporary DNS problem.",
-        "learn": "DNS works like a phonebook that turns a website name into an IP address. Your computer saves recent answers, and a bad saved entry can stop websites from loading.",
-    },
-    "n_done_router": {
-        "type": "resolved",
-        "cause": "The router needed a restart.",
-        "learn": "The router connects your home network to your internet provider and hands out addresses (DHCP). Restarting it re-establishes both.",
-    },
-    "n_pro_net": {
-        "type": "escalate", "hardware": False,
-        "reason": "The safe checks did not fix it. The Wi-Fi adapter or its driver may need deeper checks, such as reinstalling the driver or testing the adapter.",
-        "causes": ["Wi-Fi driver problem", "Wi-Fi adapter not detected or faulty", "Incorrect network configuration"],
-    },
-    "n_pro_isp": {
-        "type": "escalate", "hardware": False,
-        "reason": "Other devices fail too and a router restart did not help, so the problem is probably outside your computer. Contact your internet provider.",
-        "causes": ["Internet provider outage", "Modem or router fault", "Account or line problem"],
-    },
-}
+
+def load_knowledge_base(directory=TREE_DIR):
+    files, shared = [], {}
+    for path in sorted(Path(directory).glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise TreeError(f"{path.name}: {error}") from error
+        if path.name == SHARED_FILE:
+            shared = data.get("nodes", {})
+        else:
+            files.append(data)
+    return build_knowledge_base(files, shared)
+
+
+TREE, START_NODES, CATEGORY_LABELS, KEYWORDS, _PREFIX = load_knowledge_base()
+_cache = {}
 
 
 def detect_category(text):
+    """Keyword fallback used when the AI is off. Matches from the start of a word."""
     text = text.lower()
-    scores = {c: sum(1 for k in kws if k in text) for c, kws in KEYWORDS.items()}
+    # a longer keyword is more specific ("blue screen" beats the common word "screen")
+    scores = {
+        cat: sum(len(k) for k in kws if re.search(r"\b" + re.escape(k), text))
+        for cat, kws in KEYWORDS.items()
+    }
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else "unknown"
 
@@ -253,19 +211,14 @@ def get_node(node_id):
     return TREE[node_id]
 
 
-_cache = {}
-
-
 def steps_remaining(node_id):
     """Longest number of questions/steps still possible from this node (including it)."""
     if node_id in _cache:
         return _cache[node_id]
     node = TREE[node_id]
-    if node["type"] == "question":
-        n = 1 + max(steps_remaining(o["next"]) for o in node["options"])
-    elif node["type"] == "step":
-        n = 1 + max(steps_remaining(node["fixed"]), steps_remaining(node["not_fixed"]))
-    else:
+    if node["type"] in TERMINAL:
         n = 0
+    else:
+        n = 1 + max(steps_remaining(t) for t in _targets(node))
     _cache[node_id] = n
     return n

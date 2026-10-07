@@ -1,0 +1,134 @@
+{
+ "category": "printer",
+ "label": "Printer",
+ "prefix": "r_",
+ "order": 6,
+ "pick_label": "The printer will not print or is offline",
+ "keywords": [
+  "printer",
+  "print",
+  "printing",
+  "scanner",
+  "paper jam",
+  "toner",
+  "ink"
+ ],
+ "start": "r_start",
+ "nodes": {
+  "r_start": {
+   "type": "question",
+   "text": "How is the printer connected to your computer?",
+   "why": "A USB cable and Wi-Fi fail in different ways, so the first checks are different.",
+   "options": [
+    {
+     "label": "USB cable",
+     "next": "r_basic"
+    },
+    {
+     "label": "Wi-Fi or network",
+     "next": "r_wifi"
+    }
+   ]
+  },
+  "r_basic": {
+   "type": "step",
+   "title": "Check power, paper and cables",
+   "do": "Make sure the printer is on and has no blinking error light. Check there is paper in the tray and no paper jam, and that ink or toner is not empty. Check the USB cable is firmly plugged in at both ends.",
+   "why": "Most printing problems are simple: a jam, no paper, empty ink or a loose cable.",
+   "expect": "The printer's lights settle and any error light turns off.",
+   "fixed": "r_done_basic",
+   "not_fixed": "r_queue"
+  },
+  "r_done_basic": {
+   "type": "resolved",
+   "cause": "A paper jam, empty tray, low ink or a loose cable.",
+   "learn": "A printer will not accept a job if it reports an error such as a jam or no paper. Clearing the error lets the job continue."
+  },
+  "r_wifi": {
+   "type": "step",
+   "title": "Restart the printer and check its Wi-Fi",
+   "do": "Turn the printer off, wait 30 seconds, and turn it on. Wait until its Wi-Fi light or screen shows it is connected. Check it is on the same Wi-Fi network as your computer.",
+   "why": "Printers often lose their Wi-Fi connection and a restart makes them reconnect.",
+   "expect": "The Wi-Fi light stops blinking and stays on.",
+   "fixed": "r_done_wifi",
+   "not_fixed": "r_queue"
+  },
+  "r_done_wifi": {
+   "type": "resolved",
+   "cause": "The printer had lost its Wi-Fi connection.",
+   "learn": "A network printer has its own IP address on your Wi-Fi. If the printer disconnects or gets a new address, the computer can no longer find it."
+  },
+  "r_queue": {
+   "type": "step",
+   "title": "Clear stuck print jobs",
+   "do": "Open Settings > Bluetooth & devices > Printers & scanners, choose your printer, and open the print queue. In the Printer menu, choose 'Cancel All Documents'. Then try printing a test page.",
+   "why": "One stuck job can block every job behind it.",
+   "expect": "The queue empties and the next job prints.",
+   "fixed": "r_done_queue",
+   "not_fixed": "r_offline"
+  },
+  "r_done_queue": {
+   "type": "resolved",
+   "cause": "A stuck print job blocking the queue.",
+   "learn": "Jobs wait in a queue and print in order. If the first job gets stuck, the others wait behind it."
+  },
+  "r_offline": {
+   "type": "step",
+   "title": "Make sure the printer is not paused or offline",
+   "do": "In the print queue, open the Printer menu. Untick 'Pause Printing' and 'Use Printer Offline' if they are ticked. Then right-click the printer in Printers & scanners and choose 'Set as default'.",
+   "why": "Windows can mark a printer as offline or paused after a connection hiccup, and it will not print until you switch that off.",
+   "expect": "The word 'Offline' disappears from the printer's status.",
+   "fixed": "r_done_offline",
+   "not_fixed": "r_spooler"
+  },
+  "r_done_offline": {
+   "type": "resolved",
+   "cause": "The printer was set to offline or paused.",
+   "learn": "Windows remembers an offline or paused state even after the printer is ready. You have to clear it manually."
+  },
+  "r_spooler": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "This runs a command as administrator. Type it exactly as shown and nothing else.",
+   "title": "Restart the print spooler",
+   "do": "Right-click Start and open Windows PowerShell (Admin). Type the command below and press Enter, then try printing again.",
+   "command": "Restart-Service Spooler",
+   "why": "The print spooler is the Windows service that manages printing. Restarting it clears many stuck states.",
+   "expect": "The command finishes in a second or two without an error.",
+   "technical": "Restarts the Spooler service, which also releases files held in the spool folder.",
+   "fixed": "r_done_spooler",
+   "not_fixed": "r_driver"
+  },
+  "r_done_spooler": {
+   "type": "resolved",
+   "cause": "The print spooler service stopped responding.",
+   "learn": "The Print Spooler is a background service that holds your jobs and sends them to the printer. If it hangs, nothing prints until it restarts."
+  },
+  "r_driver": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only download a driver from the printer maker's official website.",
+   "title": "Remove and add the printer again",
+   "do": "In Settings > Bluetooth & devices > Printers & scanners, select the printer and choose Remove. Restart the computer. Then choose 'Add device' and let Windows find the printer again. If it does not install, download the driver from the printer maker's website.",
+   "why": "Adding the printer again installs a fresh driver, which replaces a damaged one.",
+   "expect": "Windows finds the printer and installs it, then you can print a test page.",
+   "fixed": "r_done_driver",
+   "not_fixed": "r_pro_printer"
+  },
+  "r_done_driver": {
+   "type": "resolved",
+   "cause": "A corrupted or outdated printer driver.",
+   "learn": "The printer driver turns your document into a language the printer understands. If it is damaged, the printer may ignore your jobs."
+  },
+  "r_pro_printer": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe checks are used up. The printer itself may have a hardware or firmware problem, such as its print head, rollers or internal parts. Repairs inside a printer are best left to a technician or the maker's support.",
+   "causes": [
+    "Printer hardware fault",
+    "Printer firmware problem",
+    "Network setup problem"
+   ]
+  }
+ }
+}

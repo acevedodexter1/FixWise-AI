@@ -1,0 +1,237 @@
+{
+ "category": "boot",
+ "label": "Startup and blue screen",
+ "prefix": "w_",
+ "order": 11,
+ "pick_label": "Windows will not start, shows a blue screen, or keeps restarting",
+ "keywords": [
+  "blue screen",
+  "bluescreen",
+  "blue-screen",
+  "asul na screen",
+  "bsod",
+  "stop code",
+  "boot",
+  "won't boot",
+  "will not boot",
+  "not booting",
+  "won't start",
+  "will not start",
+  "doesn't start",
+  "not starting",
+  "automatic repair",
+  "startup repair",
+  "restart loop",
+  "boot loop",
+  "keeps restarting",
+  "keeps rebooting",
+  "no bootable",
+  "operating system not found",
+  "stuck on windows logo",
+  "windows logo",
+  "inaccessible boot",
+  "critical process died",
+  "kernel panic"
+ ],
+ "start": "w_start",
+ "nodes": {
+  "w_start": {
+   "type": "question",
+   "text": "What happens when you turn the computer on?",
+   "why": "Windows can fail to start for different reasons, and each one has its own safe checks.",
+   "options": [
+    {
+     "label": "A blue screen with a sad face, an error message or a stop code",
+     "next": "w_unplug"
+    },
+    {
+     "label": "'Preparing Automatic Repair', or it keeps restarting again and again",
+     "next": "w_unplug"
+    },
+    {
+     "label": "A black screen that says 'No bootable device' or 'Operating system not found'",
+     "next": "w_unplug"
+    },
+    {
+     "label": "Windows opens, but a blue screen or restart happens now and then while I use it",
+     "next": "w_recent"
+    },
+    {
+     "label": "The screen is black, but I can see lights or hear the fan",
+     "next": "d_start"
+    },
+    {
+     "label": "Nothing happens at all, there are no lights",
+     "next": "c_start"
+    }
+   ]
+  },
+  "w_unplug": {
+   "type": "step",
+   "title": "Turn it off and unplug everything extra",
+   "do": "Hold the power button for about 10 seconds until the computer is fully off. Unplug the USB flash drives, external drives, SD cards, printers, phones and adapters. Leave the charger connected if it is a laptop. Wait 30 seconds, then turn the computer on again.",
+   "why": "A connected drive or device can confuse the startup, and Windows may try to start from it or crash while loading its driver.",
+   "expect": "Windows reaches the sign-in screen without the blue screen or the restart loop.",
+   "fixed": "w_done_unplug",
+   "not_fixed": "w_recovery"
+  },
+  "w_done_unplug": {
+   "type": "resolved",
+   "cause": "A connected USB drive, card or device that stopped Windows from starting properly.",
+   "learn": "At startup the computer looks for something to start from. A drive that is plugged in can get in the way, so unplug extra devices first when Windows will not start. Plug them back in one at a time to find the one that causes it."
+  },
+  "w_recovery": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only do this if the screen is not saying 'Working on updates' or 'Do not turn off your computer'. Keep the laptop charger connected, and do not force the computer off more than three times.",
+   "title": "Open the Windows recovery menu",
+   "do": "Press the power button to turn the computer on. As soon as you see the Windows logo or the spinning dots, hold the power button until it turns off. Do this two times, and let it start normally the third time. Windows should open a screen called 'Automatic Repair', then choose Advanced options. If you are asked, choose Troubleshoot and then Advanced options.",
+   "why": "Windows opens its recovery tools by itself after it fails to start a few times in a row. These tools can repair the startup without touching your files.",
+   "expect": "A blue screen titled 'Choose an option' or 'Advanced options' appears with Startup Repair and other tools.",
+   "fixed_label": "The recovery menu opened",
+   "fixed": "w_repair",
+   "not_fixed": "w_pro_nostart"
+  },
+  "w_repair": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "This can take up to an hour. Keep the charger connected and do not turn the computer off while it says 'Diagnosing your PC' or 'Attempting repairs'.",
+   "title": "Run Startup Repair",
+   "do": "In the recovery menu choose Troubleshoot > Advanced options > Startup Repair. Pick your account, type your password if it asks, and wait until Windows finishes and restarts.",
+   "why": "Startup Repair checks the files Windows needs to start and fixes common problems on its own. It does not delete your personal files.",
+   "expect": "The computer restarts and Windows opens normally.",
+   "fixed": "w_done_repair",
+   "not_fixed": "w_update"
+  },
+  "w_done_repair": {
+   "type": "resolved",
+   "cause": "Damaged or missing startup files that Windows repaired itself.",
+   "learn": "Windows needs a few special files to start. If a power cut, a failed update or a forced shutdown damages them, Startup Repair can often put them right."
+  },
+  "w_update": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "This removes only the latest Windows update. Your personal files and apps stay. Windows may install the update again later, which is normal.",
+   "title": "Remove the latest Windows update",
+   "do": "Go back to the recovery menu: Troubleshoot > Advanced options > Uninstall Updates. Choose 'Uninstall latest quality update'. If that does not help, repeat the steps and choose 'Uninstall latest feature update'. Confirm, wait for it to finish and let the computer restart.",
+   "why": "A new update is a common reason for a computer that worked yesterday and will not start today.",
+   "expect": "Windows starts normally after the restart.",
+   "fixed": "w_done_update",
+   "not_fixed": "w_restore"
+  },
+  "w_done_update": {
+   "type": "resolved",
+   "cause": "A recent Windows update that did not work well with this computer.",
+   "learn": "Updates are tested on many computers, but some combinations of hardware and drivers do not work together. Removing the latest update puts things back to how they were. Check for updates again after a few days."
+  },
+  "w_restore": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Apps and drivers installed after the restore point will be removed. Your personal files are not deleted. Choose a restore point from a day when the computer worked.",
+   "title": "Go back to an earlier restore point",
+   "do": "In the recovery menu choose Troubleshoot > Advanced options > System Restore. Pick your account, choose a restore point from a time when the computer worked, and follow the screens. If there are no restore points, choose Cancel.",
+   "why": "System Restore returns Windows settings, drivers and system files to an earlier day without touching your documents, photos or downloads.",
+   "expect": "The computer restarts and Windows opens normally.",
+   "fixed": "w_done_restore",
+   "not_fixed": "w_pro_startup"
+  },
+  "w_done_restore": {
+   "type": "resolved",
+   "cause": "A recent change to a driver, app or setting that stopped Windows from starting.",
+   "learn": "Windows saves a restore point before big changes such as updates and driver installs. Going back to one undoes the change that caused the problem."
+  },
+  "w_recent": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Uninstall only the one app or update that was added just before the problem began. Do not remove apps you are not sure about.",
+   "title": "Look at what changed recently",
+   "do": "Open Settings > Windows Update > Update history and look at the last few updates and drivers. Then open Settings > Apps > Installed apps and sort by install date. If the blue screens started soon after a certain update or app, uninstall that one and restart.",
+   "why": "A new app, driver or update is one of the most common reasons for a blue screen that appears now and then.",
+   "expect": "The blue screens and restarts stop after the restart.",
+   "fixed": "w_done_recent",
+   "not_fixed": "w_heat"
+  },
+  "w_done_recent": {
+   "type": "resolved",
+   "cause": "A recently installed app, driver or update that did not work well with this computer.",
+   "learn": "When a computer works for a long time and then starts to crash, the best clue is what changed just before. Removing the newest change is the safest first test."
+  },
+  "w_heat": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only clean the outside. Do not open the computer or push anything into the vents.",
+   "title": "Check for heat and blocked vents",
+   "do": "Turn the computer off and let it cool for 10 minutes. Place it on a hard, flat surface, not on a bed or a lap. Look at the air vents on the sides and the bottom. If there is dust, gently clean the outside of the vents with a soft dry brush. Turn it on and use it normally for a while.",
+   "why": "A computer that gets too hot can crash or restart suddenly to protect itself, and that can look like a blue screen.",
+   "expect": "The computer stays stable and does not shut down or show a blue screen.",
+   "fixed": "w_done_heat",
+   "not_fixed": "w_mem"
+  },
+  "w_done_heat": {
+   "type": "resolved",
+   "cause": "The computer was getting too hot because of blocked vents or a soft surface.",
+   "learn": "Fans pull cool air in through the vents. Dust or a soft surface blocks them, so the processor gets too hot and the computer protects itself by restarting."
+  },
+  "w_mem": {
+   "type": "question",
+   "text": "Save your work and close your apps first, because the computer restarts straight away. Then open the Start menu, type Windows Memory Diagnostic, open it and choose 'Restart now and check for problems'. It takes a few minutes. After Windows opens again, a message shows the result. What did it say?",
+   "why": "This built-in test checks the computer's memory, which is a common hidden reason for random blue screens.",
+   "options": [
+    {
+     "label": "No problems were detected",
+     "next": "w_pro_random"
+    },
+    {
+     "label": "It found problems with the memory",
+     "next": "w_pro_memory"
+    },
+    {
+     "label": "I could not run it or I did not see the result",
+     "next": "w_pro_random"
+    }
+   ]
+  },
+  "w_pro_nostart": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The recovery menu did not open. The drive that holds Windows may not be detected, or the computer may have a hardware fault. FixWise AI cannot safely guide this further. Do not open the computer yourself.",
+   "causes": [
+    "The drive that holds Windows is not detected",
+    "Damaged startup area on the drive",
+    "Failing drive",
+    "Hardware fault"
+   ]
+  },
+  "w_pro_startup": {
+   "type": "escalate",
+   "hardware": false,
+   "reason": "The safe startup repairs did not bring Windows back. Windows may need a deeper repair or a reinstall, and a technician can try to save your files first. Do not reset or reinstall Windows before your important files are backed up.",
+   "causes": [
+    "Badly damaged Windows system files",
+    "Drive problem",
+    "Problem with a driver that cannot be removed from the recovery menu"
+   ]
+  },
+  "w_pro_random": {
+   "type": "escalate",
+   "hardware": false,
+   "reason": "The safe checks did not find the cause of the blue screens. A technician can read the crash records and test the hardware properly. Write down the stop code the blue screen shows, and bring the report.",
+   "causes": [
+    "A faulty or outdated driver",
+    "Failing drive",
+    "Problem with the memory or other hardware",
+    "Damaged Windows system files"
+   ]
+  },
+  "w_pro_memory": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The memory test reported a problem. The memory may be faulty and may need to be replaced. FixWise AI does not give hardware repair instructions, so let a technician handle it.",
+   "causes": [
+    "Faulty memory module",
+    "Memory not seated properly",
+    "Motherboard memory slot problem"
+   ]
+  }
+ }
+}

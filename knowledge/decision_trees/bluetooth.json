@@ -1,0 +1,139 @@
+{
+ "category": "bluetooth",
+ "label": "Bluetooth",
+ "prefix": "b_",
+ "order": 8,
+ "pick_label": "Bluetooth will not turn on or connect",
+ "keywords": [
+  "bluetooth",
+  "pairing",
+  "paired",
+  "pair",
+  "airpods"
+ ],
+ "start": "b_start",
+ "nodes": {
+  "b_start": {
+   "type": "question",
+   "text": "Open Settings > Bluetooth & devices. Do you see a Bluetooth on/off switch?",
+   "why": "If the switch is missing, Windows may not see a Bluetooth adapter at all, which is a different problem from a device that will not connect.",
+   "options": [
+    {
+     "label": "Yes, there is a Bluetooth switch",
+     "next": "b_toggle"
+    },
+    {
+     "label": "No, Bluetooth is missing",
+     "next": "b_restart"
+    }
+   ]
+  },
+  "b_toggle": {
+   "type": "step",
+   "title": "Turn Bluetooth off and on",
+   "do": "Turn Bluetooth off, wait 10 seconds and turn it on. Check that Airplane mode is off. Then try connecting your device again.",
+   "why": "Switching the radio off and on refreshes the Bluetooth connection.",
+   "expect": "Nearby Bluetooth devices appear in the list within a few seconds.",
+   "fixed": "b_done_toggle",
+   "not_fixed": "b_device"
+  },
+  "b_done_toggle": {
+   "type": "resolved",
+   "cause": "Bluetooth was switched off or needed a refresh.",
+   "learn": "Bluetooth uses a small radio inside the computer. Airplane mode or a setting can switch it off, and toggling it restarts it."
+  },
+  "b_device": {
+   "type": "step",
+   "title": "Check the device itself",
+   "do": "Charge or replace the batteries in the Bluetooth device. Move it close to the computer (within 1 to 2 metres). Make sure it is not already connected to your phone or another computer, and turn it off and on.",
+   "why": "A flat battery, a long distance, or a device that is already connected elsewhere stops it from connecting.",
+   "expect": "The device appears in the list or reconnects.",
+   "fixed": "b_done_device",
+   "not_fixed": "b_forget"
+  },
+  "b_done_device": {
+   "type": "resolved",
+   "cause": "A flat battery, distance, or the device being connected elsewhere.",
+   "learn": "Most Bluetooth devices connect to one host at a time. If your headphones are still connected to your phone, your computer cannot reach them."
+  },
+  "b_forget": {
+   "type": "step",
+   "title": "Remove the device and pair it again",
+   "do": "Open Settings > Bluetooth & devices, select the device and choose 'Remove device'. Put the device in pairing mode (usually by holding its Bluetooth button until a light flashes). Then choose 'Add device' > Bluetooth and select it.",
+   "why": "The saved pairing can become outdated, and pairing from scratch creates a fresh one.",
+   "expect": "The device appears, connects and shows as Connected.",
+   "fixed": "b_done_forget",
+   "not_fixed": "b_driver"
+  },
+  "b_done_forget": {
+   "type": "resolved",
+   "cause": "The saved pairing was outdated.",
+   "learn": "Pairing saves a shared key between your computer and the device. If one side forgets it, they cannot reconnect until you pair again."
+  },
+  "b_restart": {
+   "type": "step",
+   "title": "Restart the computer",
+   "do": "Use Start > Power > Restart. Choose Restart, not Shut down.",
+   "why": "A restart reloads the Bluetooth driver and services.",
+   "expect": "The Bluetooth switch may appear in Settings after the restart.",
+   "fixed": "b_done_restart",
+   "not_fixed": "b_dm"
+  },
+  "b_done_restart": {
+   "type": "resolved",
+   "cause": "A temporary Bluetooth driver or service fault.",
+   "learn": "Fast Startup can keep a stuck Bluetooth driver loaded after a shutdown. A real restart clears it."
+  },
+  "b_dm": {
+   "type": "question",
+   "text": "Right-click Start and open Device Manager. Is there a section called 'Bluetooth'?",
+   "why": "If Windows lists a Bluetooth adapter, the problem is likely its driver. If there is none, Windows cannot see one.",
+   "options": [
+    {
+     "label": "Yes, there is a Bluetooth section",
+     "next": "b_driver"
+    },
+    {
+     "label": "No, there is no Bluetooth section",
+     "next": "b_pro_missing"
+    }
+   ]
+  },
+  "b_driver": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only uninstall the device named in this step and leave 'Delete the driver' unticked. Windows installs it again when you restart.",
+   "title": "Reinstall the Bluetooth driver",
+   "do": "In Device Manager, expand 'Bluetooth', right-click the adapter and choose 'Uninstall device' (leave 'delete the driver' unticked). Restart the computer and let Windows install it again.",
+   "why": "Windows installs a fresh driver on startup, which replaces a damaged one.",
+   "expect": "Bluetooth appears in Settings again after the restart.",
+   "fixed": "b_done_driver",
+   "not_fixed": "b_pro_bt"
+  },
+  "b_done_driver": {
+   "type": "resolved",
+   "cause": "A corrupted Bluetooth driver.",
+   "learn": "The Bluetooth driver connects Windows to the adapter. If it is damaged, the adapter can seem missing even though it is fine."
+  },
+  "b_pro_missing": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "Windows cannot see a Bluetooth adapter. Many desktop computers have no built-in Bluetooth, and a small USB Bluetooth adapter can add it. If your computer should have Bluetooth, the adapter may be disabled or faulty, and a technician can check.",
+   "causes": [
+    "No built-in Bluetooth adapter (common on desktops)",
+    "Bluetooth adapter disabled in the firmware",
+    "Faulty or disconnected adapter"
+   ]
+  },
+  "b_pro_bt": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe software checks are used up. The computer's Bluetooth adapter or the device itself may be at fault.",
+   "causes": [
+    "Bluetooth adapter problem",
+    "Faulty Bluetooth device",
+    "Interference or range problem"
+   ]
+  }
+ }
+}

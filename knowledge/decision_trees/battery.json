@@ -1,0 +1,170 @@
+{
+ "category": "battery",
+ "label": "Battery and charging",
+ "prefix": "c_",
+ "order": 9,
+ "pick_label": "The laptop is not charging, or the battery drains fast",
+ "keywords": [
+  "battery",
+  "charging",
+  "charger",
+  "charge",
+  "plugged in",
+  "power adapter",
+  "drain"
+ ],
+ "start": "c_start",
+ "nodes": {
+  "c_start": {
+   "type": "question",
+   "text": "What is the problem? If anything smells burnt, feels very hot or looks swollen, unplug the laptop and stop using it.",
+   "why": "Charging problems and fast draining have different checks.",
+   "options": [
+    {
+     "label": "It is not charging",
+     "next": "c_cable"
+    },
+    {
+     "label": "The battery drains fast",
+     "next": "c_apps"
+    }
+   ]
+  },
+  "c_cable": {
+   "type": "step",
+   "title": "Check the charger, cable and outlet",
+   "do": "Check the charger is firmly plugged into the laptop and the wall. Try a different wall outlet that works for something else. Look at the charger and cable for fraying or bent pins; if you see damage, stop using it.",
+   "why": "A loose plug, a dead outlet or a damaged cable is the most common reason a laptop does not charge.",
+   "expect": "The charging light turns on or the battery icon shows a charging symbol.",
+   "fixed": "c_done_cable",
+   "not_fixed": "c_port"
+  },
+  "c_done_cable": {
+   "type": "resolved",
+   "cause": "A loose connection or a faulty outlet.",
+   "learn": "The charger changes wall power into low-voltage power for the laptop. If any part of that chain is loose or damaged, charging stops."
+  },
+  "c_port": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Make sure the laptop is off and unplugged first. Never use metal, and do not force anything into the port.",
+   "title": "Check the charging port for lint",
+   "do": "Turn the laptop off and unplug it. Shine a light into the charging port. If you see lint or dust, gently remove it with a wooden toothpick or a short burst of compressed air. Never use metal.",
+   "why": "Lint packed into the port can stop the plug from making full contact.",
+   "expect": "The plug seats firmly and charging starts.",
+   "fixed": "c_done_port",
+   "not_fixed": "c_reset"
+  },
+  "c_done_port": {
+   "type": "resolved",
+   "cause": "Lint or dust blocking the charger connection.",
+   "learn": "The plug has to reach the contacts at the back of the port. A small amount of packed lint can stop it from reaching them."
+  },
+  "c_reset": {
+   "type": "step",
+   "title": "Do a power reset",
+   "do": "Turn the laptop off and unplug the charger. Hold the power button for 30 seconds. Plug in only the charger and turn the laptop on.",
+   "why": "Holding the power button drains leftover charge and clears a stuck power state.",
+   "expect": "The laptop may start more slowly and then show the charging symbol.",
+   "fixed": "c_done_reset",
+   "not_fixed": "c_driver"
+  },
+  "c_done_reset": {
+   "type": "resolved",
+   "cause": "A stuck power or charging state.",
+   "learn": "Power management chips keep a small state in memory. A power reset clears it so charging can be detected again."
+  },
+  "c_driver": {
+   "type": "step",
+   "risk": "medium",
+   "caution": "Only uninstall the battery item named in this step. Windows installs it again when you restart.",
+   "title": "Reinstall the battery driver",
+   "do": "Right-click Start and open Device Manager. Expand 'Batteries', right-click 'Microsoft ACPI-Compliant Control Method Battery' and choose 'Uninstall device'. Restart the computer; Windows installs it again.",
+   "why": "Windows installs a fresh battery driver at startup, which can fix a battery that is stuck at not charging.",
+   "expect": "The battery icon updates after the restart.",
+   "fixed": "c_done_driver",
+   "not_fixed": "c_pro_charge"
+  },
+  "c_done_driver": {
+   "type": "resolved",
+   "cause": "The battery driver was stuck.",
+   "learn": "Windows reads the battery level through a driver. If the driver gets stuck, it can show 'plugged in, not charging'."
+  },
+  "c_apps": {
+   "type": "step",
+   "title": "See what is using your battery",
+   "do": "Open Settings > System > Power & battery > Battery usage. Look for apps using a large share of the battery, and close or uninstall the ones you do not need.",
+   "why": "One busy app in the background can drain the battery quickly.",
+   "expect": "You can see which apps use the most power.",
+   "fixed": "c_done_apps",
+   "not_fixed": "c_saver"
+  },
+  "c_done_apps": {
+   "type": "resolved",
+   "cause": "A background app using a lot of power.",
+   "learn": "Apps that keep the processor, screen or network busy use more energy. Finding and closing them is the quickest way to extend battery life."
+  },
+  "c_saver": {
+   "type": "step",
+   "title": "Turn on Battery saver and lower brightness",
+   "do": "Open Settings > System > Power & battery. Turn on Battery saver, lower the screen brightness, and shorten the screen timeout.",
+   "why": "The screen is usually the biggest user of battery power, and Battery saver limits background activity.",
+   "expect": "The battery lasts longer between charges.",
+   "fixed": "c_done_saver",
+   "not_fixed": "c_health"
+  },
+  "c_done_saver": {
+   "type": "resolved",
+   "cause": "High screen brightness and background activity.",
+   "learn": "Brightness and background tasks have a big effect on battery life. Lowering them often adds an hour or more."
+  },
+  "c_health": {
+   "type": "question",
+   "text": "Open Command Prompt and run powercfg /batteryreport, then open the report file it names. Is the 'Full charge capacity' much lower than the 'Design capacity' (for example, under 60%)?",
+   "why": "This compares how much charge the battery holds now with how much it held when new.",
+   "options": [
+    {
+     "label": "Yes, it is much lower",
+     "next": "c_pro_worn"
+    },
+    {
+     "label": "No, it is close to the design capacity",
+     "next": "c_pro_drain"
+    },
+    {
+     "label": "I can't check",
+     "next": "c_pro_drain"
+    }
+   ]
+  },
+  "c_pro_charge": {
+   "type": "escalate",
+   "hardware": true,
+   "reason": "The safe checks did not restore charging. The charger, the charging port or the battery may be at fault. If you can borrow a matching charger from the maker, trying it helps tell them apart.",
+   "causes": [
+    "Faulty charger",
+    "Damaged charging port",
+    "Worn-out or faulty battery"
+   ]
+  },
+  "c_pro_worn": {
+   "type": "escalate",
+   "hardware": false,
+   "reason": "The battery now holds much less charge than when it was new, which is normal wear. Many laptop batteries are built in, so replacement is best done by a technician or the maker.",
+   "causes": [
+    "Normal battery wear",
+    "Battery needs replacing"
+   ]
+  },
+  "c_pro_drain": {
+   "type": "escalate",
+   "hardware": false,
+   "reason": "The battery capacity looks healthy, but it still drains quickly. A technician can look at background software, heat and power settings in more detail.",
+   "causes": [
+    "Software using many resources",
+    "Overheating or heavy hardware load",
+    "Power management fault"
+   ]
+  }
+ }
+}
